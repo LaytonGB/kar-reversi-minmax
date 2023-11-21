@@ -38,7 +38,7 @@ impl Reversi {
     }
 
     pub fn start(&mut self) {
-        while self.someone_can_move() {
+        while self.anyone_can_move() {
             self.update_valid_moves();
             if self
                 .bot_player
@@ -73,7 +73,7 @@ impl Reversi {
         todo!()
     }
 
-    fn someone_can_move(&self) -> bool {
+    fn anyone_can_move(&self) -> bool {
         todo!()
     }
 
