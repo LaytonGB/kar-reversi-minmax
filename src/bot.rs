@@ -1,4 +1,4 @@
-use crate::bot_algorithm::BotAlgorithm;
+use crate::{bot_algorithm::BotAlgorithm, reversi::Reversi};
 
 #[derive(Debug)]
 pub struct Bot {
@@ -9,4 +9,6 @@ impl Bot {
     pub fn new(algorithm: BotAlgorithm) -> Self {
         Self { algorithm }
     }
+
+    pub fn take_turn(&self, game: &Reversi) {}
 }
