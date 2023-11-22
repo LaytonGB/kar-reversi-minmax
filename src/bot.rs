@@ -10,5 +10,7 @@ impl Bot {
         Self { algorithm }
     }
 
-    pub fn take_turn(&self, game: &Reversi) {}
+    pub fn take_turn(&self, game: &Reversi) {
+        todo!()
+    }
 }

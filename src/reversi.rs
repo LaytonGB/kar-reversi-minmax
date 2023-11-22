@@ -1,4 +1,4 @@
-use std::{cmp::Ordering, collections::HashSet};
+use std::{cmp::Ordering, collections::HashMap};
 
 use text_io::try_read;
 
@@ -13,7 +13,7 @@ pub struct Reversi {
     bot_player: Option<(Player, Bot)>,
     current_player: Player,
     history: History,
-    valid_moves: Vec<(usize, usize)>,
+    valid_moves: HashMap<(usize, usize), Vec<(usize, usize)>>,
 }
 
 impl Default for Reversi {
@@ -54,11 +54,13 @@ impl Reversi {
             {
                 let (_, bot) = self.bot_player.as_ref().unwrap();
                 bot.take_turn(self);
-            } else {
+            } else if self.can_move(self.current_player) {
                 let coord =
                     self.get_valid_coordinate_input(Some(|| println!("ERROR: Invalid input")));
                 self.place_piece(coord);
             }
+
+            self.switch_players();
         }
 
         self.show_board();
@@ -68,42 +70,50 @@ impl Reversi {
     }
 
     fn update_valid_moves(&mut self) {
-        let player = self.current_player;
-        self.valid_moves = self.get_valid_moves_for_player(player);
+        self.valid_moves = self.get_valid_moves_for_player(self.current_player);
     }
 
-    fn get_valid_moves_for_player(&self, player: Player) -> Vec<(usize, usize)> {
+    fn get_valid_moves_for_player(
+        &self,
+        player: Player,
+    ) -> HashMap<(usize, usize), Vec<(usize, usize)>> {
         let n = self.board.size();
         self.board
             .pieces_for_player(player)
-            .fold(HashSet::new(), |mut s, start| {
+            .fold(HashMap::new(), |mut m, start| {
                 for (i, j) in DIRECTIONS {
                     let mut coord = (start.0.wrapping_add(i), start.1.wrapping_add(j));
+                    let mut cap_pieces = Vec::new();
                     let increment = |c: (usize, usize)| (c.0.wrapping_add(i), c.1.wrapping_add(j));
                     while coord.0 < n && coord.1 < n {
-                        coord = increment(coord);
                         let p = self.board.get(coord);
                         match p {
                             Some(p) if p == player => {
                                 break;
                             }
-                            Some(_) => coord = increment(coord),
+                            Some(_) => {
+                                cap_pieces.push(coord);
+                                coord = increment(coord);
+                            }
                             None => {
-                                s.insert(coord);
+                                if !cap_pieces.is_empty() {
+                                    m.insert(coord, cap_pieces);
+                                }
                                 break;
                             }
                         }
                     }
                 }
-                s
+                m
             })
-            .drain()
-            .collect()
     }
 
     fn anyone_can_move(&self) -> bool {
-        self.get_valid_moves_for_player(Player::Black).len() > 0
-            || self.get_valid_moves_for_player(Player::Red).len() > 0
+        self.can_move(Player::Black) || self.can_move(Player::Red)
+    }
+
+    fn can_move(&self, player: Player) -> bool {
+        self.get_valid_moves_for_player(player).len() > 0
     }
 
     fn get_winner(&self) -> Option<Player> {
@@ -133,7 +143,7 @@ impl Reversi {
                 && col.as_ref().is_ok_and(|&c| c < self.board.size())
                 && self
                     .valid_moves
-                    .contains(&(*row.as_ref().unwrap(), *col.as_ref().unwrap()))
+                    .contains_key(&(*row.as_ref().unwrap(), *col.as_ref().unwrap()))
             {
                 return (row.unwrap(), col.unwrap());
             } else if let Some(ref error_msg) = error_msg {
@@ -143,7 +153,15 @@ impl Reversi {
     }
 
     fn place_piece(&mut self, coord: (usize, usize)) {
-        self.board.set(coord, self.current_player)
+        self.board.set(coord, self.current_player);
+        let captured_pieces = self.valid_moves.get(&coord).unwrap();
+        for &c in captured_pieces {
+            self.board.set(c, self.current_player);
+        }
+    }
+
+    fn switch_players(&mut self) {
+        self.current_player = self.current_player.other();
     }
 }
 
@@ -157,8 +175,13 @@ mod tests {
         game.update_valid_moves();
 
         assert_eq!(
-            HashSet::from_iter(game.valid_moves.to_vec().into_iter()),
-            HashSet::from([(2, 3), (3, 2), (4, 5), (5, 4)])
+            game.valid_moves,
+            HashMap::from([
+                ((2, 3), vec![(3, 3)]),
+                ((3, 2), vec![(3, 3)]),
+                ((4, 5), vec![(4, 4)]),
+                ((5, 4), vec![(4, 4)])
+            ])
         );
     }
 }
