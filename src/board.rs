@@ -54,6 +54,10 @@ impl Board {
             })
         })
     }
+
+    pub(crate) fn switch_piece(&mut self, coord: (usize, usize)) {
+        self.board[coord.0][coord.1] = Some(self.board[coord.0][coord.1].unwrap().other());
+    }
 }
 
 impl Display for Board {

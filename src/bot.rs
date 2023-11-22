@@ -11,6 +11,14 @@ impl Bot {
     }
 
     pub fn take_turn(&self, game: &Reversi) {
+        match self.algorithm {
+            BotAlgorithm::MinMax => self.take_turn_minmax(game),
+            BotAlgorithm::MinMaxAlphaBeta => todo!(),
+            BotAlgorithm::NegaMax => todo!(),
+        }
+    }
+
+    fn take_turn_minmax(&self, game: &Reversi) {
         todo!()
     }
 }

@@ -154,10 +154,14 @@ impl Reversi {
 
     fn place_piece(&mut self, coord: (usize, usize)) {
         self.board.set(coord, self.current_player);
+
         let captured_pieces = self.valid_moves.get(&coord).unwrap();
         for &c in captured_pieces {
-            self.board.set(c, self.current_player);
+            self.board.switch_piece(c);
         }
+
+        self.history
+            .push(self.current_player, coord, captured_pieces);
     }
 
     fn switch_players(&mut self) {
