@@ -11,7 +11,7 @@ pub struct Board {
 }
 
 impl Board {
-    pub fn new(size: usize) -> Self {
+    pub(crate) fn new(size: usize) -> Self {
         if size < 6 || size % 2 == 1 {
             panic!("size must be even")
         }
@@ -24,6 +24,35 @@ impl Board {
         board[mid - 1][mid] = Some(Player::Red);
 
         Self { board, size }
+    }
+
+    pub(crate) fn size(&self) -> usize {
+        self.size
+    }
+
+    pub(crate) fn get(&self, coord: (usize, usize)) -> Option<Player> {
+        debug_assert!(coord.0 < self.size && coord.1 < self.size);
+
+        self.board[coord.0][coord.1]
+    }
+
+    pub(crate) fn set(&mut self, coord: (usize, usize), player: Player) {
+        self.board[coord.0][coord.1] = Some(player);
+    }
+
+    pub(crate) fn pieces_for_player(
+        &self,
+        player: Player,
+    ) -> impl Iterator<Item = (usize, usize)> + '_ {
+        self.board.iter().enumerate().flat_map(move |(i, row)| {
+            row.iter().enumerate().filter_map(move |(j, val)| {
+                if val.is_some_and(|p| p == player) {
+                    Some((i, j))
+                } else {
+                    None
+                }
+            })
+        })
     }
 }
 
