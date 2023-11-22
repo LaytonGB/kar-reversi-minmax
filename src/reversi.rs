@@ -3,11 +3,11 @@ use std::{cmp::Ordering, collections::HashMap};
 use text_io::try_read;
 
 use crate::{
-    board::Board, bot::Bot, bot_algorithm::BotAlgorithm, constants::DIRECTIONS, history::History,
-    player::Player,
+    board::Board, bot::Bot, bot_algorithm::BotAlgorithm, bot_difficulty::BotDifficulty,
+    constants::DIRECTIONS, history::History, player::Player,
 };
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Reversi {
     board: Board,
     bot_player: Option<(Player, Bot)>,
@@ -29,10 +29,23 @@ impl Default for Reversi {
 }
 
 impl Reversi {
-    pub fn new(bot_player: Option<(Player, BotAlgorithm)>) -> Self {
+    pub fn new(bot_player: Option<(Player, BotAlgorithm, BotDifficulty)>) -> Self {
         Self {
             board: Board::new(8),
-            bot_player: bot_player.map_or(None, |(p, al)| Some((p, Bot::new(al)))),
+            bot_player: bot_player.map_or(None, |(p, al, dif)| {
+                Some((
+                    p,
+                    Bot::new(
+                        al,
+                        match dif {
+                            BotDifficulty::Easy => Some(3),
+                            BotDifficulty::Medium => Some(6),
+                            BotDifficulty::Hard => Some(12),
+                            BotDifficulty::Insane => None,
+                        },
+                    ),
+                ))
+            }),
             current_player: Player::Red,
             ..Default::default()
         }
@@ -53,7 +66,8 @@ impl Reversi {
                 .is_some_and(|(p, _)| *p == self.current_player)
             {
                 let (_, bot) = self.bot_player.as_ref().unwrap();
-                bot.take_turn(self);
+                let coord = dbg!(bot.get_move(self));
+                self.place_piece(coord);
             } else if self.can_move(self.current_player) {
                 let coord =
                     self.get_valid_coordinate_input(Some(|| println!("ERROR: Invalid input")));
@@ -69,7 +83,7 @@ impl Reversi {
         self.show_winner(winner);
     }
 
-    fn update_valid_moves(&mut self) {
+    pub(crate) fn update_valid_moves(&mut self) {
         self.valid_moves = self.get_valid_moves_for_player(self.current_player);
     }
 
@@ -108,11 +122,11 @@ impl Reversi {
             })
     }
 
-    fn anyone_can_move(&self) -> bool {
+    pub(crate) fn anyone_can_move(&self) -> bool {
         self.can_move(Player::Black) || self.can_move(Player::Red)
     }
 
-    fn can_move(&self, player: Player) -> bool {
+    pub(crate) fn can_move(&self, player: Player) -> bool {
         self.get_valid_moves_for_player(player).len() > 0
     }
 
@@ -139,21 +153,26 @@ impl Reversi {
         loop {
             let row: Result<usize, _> = try_read!();
             let col: Result<usize, _> = try_read!();
-            if row.as_ref().is_ok_and(|&r| r < self.board.size())
-                && col.as_ref().is_ok_and(|&c| c < self.board.size())
-                && self
-                    .valid_moves
-                    .contains_key(&(*row.as_ref().unwrap(), *col.as_ref().unwrap()))
+            if row
+                .as_ref()
+                .is_ok_and(|&r| r.wrapping_sub(1) < self.board.size())
+                && col
+                    .as_ref()
+                    .is_ok_and(|&c| c.wrapping_sub(1) < self.board.size())
+                && self.valid_moves.contains_key(&(
+                    row.as_ref().unwrap().wrapping_sub(1),
+                    col.as_ref().unwrap().wrapping_sub(1),
+                ))
             {
-                return (row.unwrap(), col.unwrap());
+                return (row.unwrap().wrapping_sub(1), col.unwrap().wrapping_sub(1));
             } else if let Some(ref error_msg) = error_msg {
                 error_msg()
             }
         }
     }
 
-    fn place_piece(&mut self, coord: (usize, usize)) {
-        self.board.set(coord, self.current_player);
+    pub(crate) fn place_piece(&mut self, coord: (usize, usize)) {
+        self.board.set(coord, Some(self.current_player));
 
         let captured_pieces = self.valid_moves.get(&coord).unwrap();
         for &c in captured_pieces {
@@ -164,8 +183,33 @@ impl Reversi {
             .push(self.current_player, coord, captured_pieces);
     }
 
-    fn switch_players(&mut self) {
+    pub(crate) fn switch_players(&mut self) {
         self.current_player = self.current_player.other();
+    }
+
+    pub fn bot_player(&self) -> Option<&(Player, Bot)> {
+        self.bot_player.as_ref()
+    }
+
+    pub fn current_player(&self) -> Player {
+        self.current_player
+    }
+
+    pub(crate) fn valid_moves(&self) -> Vec<(usize, usize)> {
+        self.valid_moves.iter().map(|(m, _)| *m).collect()
+    }
+
+    pub(crate) fn undo_turn(&mut self) {
+        let (player, coord, captured_pieces) = self.history.pop().unwrap();
+        self.board.set(coord, None);
+        for coord in captured_pieces {
+            self.board.set(coord, Some(player.other()));
+        }
+        self.current_player = player;
+    }
+
+    pub(crate) fn board(&self) -> &Board {
+        &self.board
     }
 }
 

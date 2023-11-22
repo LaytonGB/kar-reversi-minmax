@@ -1,6 +1,6 @@
 use crate::player::Player;
 
-#[derive(Default, Debug)]
+#[derive(Clone, Default, Debug)]
 pub struct History {
     history: Vec<(Player, (usize, usize), Vec<(usize, usize)>)>,
 }
@@ -13,5 +13,9 @@ impl History {
         captured_pieces: &[(usize, usize)],
     ) {
         self.history.push((player, coord, captured_pieces.to_vec()));
+    }
+
+    pub(crate) fn pop(&mut self) -> Option<(Player, (usize, usize), Vec<(usize, usize)>)> {
+        self.history.pop()
     }
 }

@@ -36,8 +36,8 @@ impl Board {
         self.board[coord.0][coord.1]
     }
 
-    pub(crate) fn set(&mut self, coord: (usize, usize), player: Player) {
-        self.board[coord.0][coord.1] = Some(player);
+    pub(crate) fn set(&mut self, coord: (usize, usize), player: Option<Player>) {
+        self.board[coord.0][coord.1] = player;
     }
 
     pub(crate) fn pieces_for_player(
@@ -62,17 +62,25 @@ impl Board {
 
 impl Display for Board {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let text_board_iter = self.board.iter().map(|row| {
-            row.iter()
-                .map(|val| match val {
-                    Some(Player::Black) => "⚫",
-                    Some(Player::Red) => "🔴",
-                    None => " ",
-                })
-                .to_owned()
+        let player_to_string = move |player: Option<Player>| match player {
+            Some(Player::Black) => "⚫",
+            Some(Player::Red) => "🔴",
+            None => " ",
+        };
+
+        let val_iter = (0..=self.size).map(|i| {
+            (0..=self.size).map(move |j| {
+                if i == 0 {
+                    j.to_string()
+                } else if j == 0 {
+                    i.to_string()
+                } else {
+                    player_to_string(self.board[i - 1][j - 1]).to_string()
+                }
+            })
         });
 
-        let table = IterTable::new(text_board_iter).to_string();
+        let table = IterTable::new(val_iter).to_string();
 
         write!(f, "{}", table)
     }
