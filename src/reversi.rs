@@ -1,5 +1,4 @@
-use core::time;
-use std::{cmp::Ordering, collections::HashSet, thread};
+use std::{cmp::Ordering, collections::HashSet};
 
 use crate::{
     board::Board, bot::Bot, bot_algorithm::BotAlgorithm, bot_difficulty::BotDifficulty,
@@ -70,6 +69,9 @@ impl Reversi {
 
     #[cfg(feature = "terminal")]
     pub fn start(&mut self) {
+        use core::time;
+        use std::thread;
+
         while self.anyone_can_move() {
             self.show_board();
 

@@ -2,8 +2,8 @@ use bevy::prelude::*;
 
 #[derive(Component)]
 pub struct Coord {
-    row: usize,
-    col: usize,
+    pub row: usize,
+    pub col: usize,
 }
 
 #[derive(Component)]

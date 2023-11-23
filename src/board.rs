@@ -2,8 +2,6 @@ use crate::player::Player;
 
 #[cfg(feature = "terminal")]
 use std::fmt::Display;
-#[cfg(feature = "terminal")]
-use tabled::tables::IterTable;
 
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]
 pub struct Board {
@@ -64,6 +62,8 @@ impl Board {
 #[cfg(feature = "terminal")]
 impl Display for Board {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        use tabled::tables::IterTable;
+
         let player_to_string = move |player: Option<Player>| match player {
             Some(Player::Green) => "🟢",
             Some(Player::Red) => "🔴",
