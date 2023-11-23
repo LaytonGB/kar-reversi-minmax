@@ -1,4 +1,5 @@
-use std::{cmp::Ordering, collections::HashMap};
+use core::time;
+use std::{cmp::Ordering, collections::HashMap, thread};
 
 use text_io::try_read;
 
@@ -52,6 +53,12 @@ impl Reversi {
     }
 
     pub fn show_board(&self) {
+        print!("{}[2J", 27 as char);
+        println!(
+            "BLACK: {} | Red: {}",
+            self.board.pieces_for_player(Player::Black).count(),
+            self.board.pieces_for_player(Player::Red).count()
+        );
         println!("{}", self.board);
     }
 
@@ -65,8 +72,11 @@ impl Reversi {
                 .as_ref()
                 .is_some_and(|(p, _)| *p == self.current_player)
             {
-                let (_, bot) = self.bot_player.as_ref().unwrap();
-                let coord = dbg!(bot.get_move(self));
+                let sleep_time = time::Duration::from_millis(1500);
+                thread::sleep(sleep_time);
+                let game = self.clone();
+                let (_, bot) = self.bot_player.as_mut().unwrap();
+                let coord = bot.get_move(game);
                 self.place_piece(coord);
             } else if self.can_move(self.current_player) {
                 let coord =
