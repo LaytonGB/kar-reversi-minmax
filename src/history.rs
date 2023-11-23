@@ -10,7 +10,7 @@ impl History {
         &mut self,
         player: Player,
         coord: (usize, usize),
-        captured_pieces: &[(usize, usize)],
+        captured_pieces: Vec<(usize, usize)>,
     ) {
         self.history.push((player, coord, captured_pieces.to_vec()));
     }

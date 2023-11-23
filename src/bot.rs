@@ -63,7 +63,7 @@ impl Bot {
         } else if game.current_player() == game.bot_player().unwrap().0 {
             self.expansions += 1;
             let (mut score, mut coord) = (i64::MIN, None);
-            for m in game.valid_moves() {
+            for m in game.valid_moves().to_vec() {
                 game.place_piece(m);
                 game.switch_players();
                 game.update_valid_moves();
@@ -80,7 +80,7 @@ impl Bot {
         } else {
             self.expansions += 1;
             let (mut score, mut coord) = (i64::MAX, None);
-            for m in game.valid_moves() {
+            for m in game.valid_moves().to_vec() {
                 game.place_piece(m);
                 game.switch_players();
                 game.update_valid_moves();

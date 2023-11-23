@@ -6,3 +6,4 @@ pub mod constants;
 pub mod history;
 pub mod player;
 pub mod reversi;
+pub mod utils;

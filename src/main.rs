@@ -7,7 +7,6 @@ use text_io::try_read;
 fn main() {
     let mut difficulty: Option<BotDifficulty> = None;
     while difficulty.is_none() {
-        println!("{}[2J", 27 as char);
         println!("Enter a difficulty (caps matter):");
         for d in BotDifficulty::iter() {
             println!("{}", d);
@@ -16,7 +15,7 @@ fn main() {
         difficulty = try_read!().ok();
     }
     let mut game = Reversi::new(Some((
-        Player::Black,
+        Player::Red,
         BotAlgorithm::MinMax,
         difficulty.unwrap(),
     )));

@@ -18,8 +18,8 @@ impl Board {
 
         let mut board = vec![vec![None; size]; size];
         let mid = size / 2;
-        board[mid][mid] = Some(Player::Black);
-        board[mid - 1][mid - 1] = Some(Player::Black);
+        board[mid][mid] = Some(Player::Green);
+        board[mid - 1][mid - 1] = Some(Player::Green);
         board[mid][mid - 1] = Some(Player::Red);
         board[mid - 1][mid] = Some(Player::Red);
 
@@ -63,7 +63,7 @@ impl Board {
 impl Display for Board {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let player_to_string = move |player: Option<Player>| match player {
-            Some(Player::Black) => "⚫",
+            Some(Player::Green) => "🟢",
             Some(Player::Red) => "🔴",
             None => " ",
         };
