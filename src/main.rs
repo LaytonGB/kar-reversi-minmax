@@ -1,5 +1,3 @@
-use kar_reversi_minmax::game;
-
 fn main() {
     #[cfg(all(feature = "terminal", feature = "game"))]
     compile_error!("cannot enable both terminal and game");
@@ -33,6 +31,8 @@ fn main() {
 
     #[cfg(feature = "game")]
     {
+        use kar_reversi_minmax::game;
+
         game::run_game();
     }
 }
