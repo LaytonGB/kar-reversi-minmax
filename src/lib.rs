@@ -9,3 +9,10 @@ pub mod reversi;
 
 #[cfg(feature = "terminal")]
 pub mod utils;
+
+#[cfg(feature = "game")]
+pub(crate) mod bevy_structs;
+#[cfg(feature = "game")]
+pub(crate) mod bevy_systems;
+#[cfg(feature = "game")]
+pub mod game;

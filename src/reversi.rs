@@ -1,14 +1,15 @@
 use core::time;
 use std::{cmp::Ordering, collections::HashSet, thread};
 
-use text_io::try_read;
-
-#[cfg(feature = "terminal")]
-use crate::utils;
 use crate::{
     board::Board, bot::Bot, bot_algorithm::BotAlgorithm, bot_difficulty::BotDifficulty,
     constants::DIRECTIONS, history::History, player::Player,
 };
+
+#[cfg(feature = "terminal")]
+use crate::utils;
+#[cfg(feature = "terminal")]
+use text_io::try_read;
 
 #[derive(Clone, Debug)]
 pub struct Reversi {
@@ -67,9 +68,9 @@ impl Reversi {
         println!("{}", self.board);
     }
 
+    #[cfg(feature = "terminal")]
     pub fn start(&mut self) {
         while self.anyone_can_move() {
-            #[cfg(feature = "terminal")]
             self.show_board();
 
             self.update_valid_moves();
@@ -93,11 +94,8 @@ impl Reversi {
             self.switch_players();
         }
 
-        #[cfg(feature = "terminal")]
-        {
-            self.show_board();
-            self.show_winner(self.get_winner());
-        }
+        self.show_board();
+        self.show_winner(self.get_winner());
     }
 
     pub(crate) fn update_valid_moves(&mut self) {
@@ -168,6 +166,7 @@ impl Reversi {
         }
     }
 
+    #[cfg(feature = "terminal")]
     fn get_valid_coordinate_input(&self, error_msg: Option<impl Fn()>) -> (usize, usize) {
         loop {
             let row: Result<usize, _> = try_read!();
