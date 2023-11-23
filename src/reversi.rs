@@ -3,9 +3,11 @@ use std::{cmp::Ordering, collections::HashSet, thread};
 
 use text_io::try_read;
 
+#[cfg(feature = "terminal")]
+use crate::utils;
 use crate::{
     board::Board, bot::Bot, bot_algorithm::BotAlgorithm, bot_difficulty::BotDifficulty,
-    constants::DIRECTIONS, history::History, player::Player, utils,
+    constants::DIRECTIONS, history::History, player::Player,
 };
 
 #[derive(Clone, Debug)]
@@ -52,6 +54,7 @@ impl Reversi {
         }
     }
 
+    #[cfg(feature = "terminal")]
     pub fn show_board(&self) {
         utils::clear_terminal();
         println!(
@@ -66,6 +69,7 @@ impl Reversi {
 
     pub fn start(&mut self) {
         while self.anyone_can_move() {
+            #[cfg(feature = "terminal")]
             self.show_board();
 
             self.update_valid_moves();
@@ -89,10 +93,11 @@ impl Reversi {
             self.switch_players();
         }
 
-        self.show_board();
-
-        let winner = self.get_winner();
-        self.show_winner(winner);
+        #[cfg(feature = "terminal")]
+        {
+            self.show_board();
+            self.show_winner(self.get_winner());
+        }
     }
 
     pub(crate) fn update_valid_moves(&mut self) {
@@ -143,7 +148,7 @@ impl Reversi {
         self.get_valid_moves_for_player(player).count() > 0
     }
 
-    fn get_winner(&self) -> Option<Player> {
+    pub fn get_winner(&self) -> Option<Player> {
         let (black_pieces, red_pieces) = (
             self.board.pieces_for_player(Player::Green).count(),
             self.board.pieces_for_player(Player::Red).count(),
@@ -155,6 +160,7 @@ impl Reversi {
         }
     }
 
+    #[cfg(feature = "terminal")]
     fn show_winner(&self, winner: Option<Player>) {
         match winner {
             Some(winner) => println!("!!! {} WINS !!!", winner),
@@ -180,8 +186,9 @@ impl Reversi {
                 ))
             {
                 return (row.unwrap().wrapping_sub(1), col.unwrap().wrapping_sub(1));
-            } else if let Some(ref error_msg) = error_msg {
-                error_msg()
+            } else if let Some(ref _error_msg) = error_msg {
+                #[cfg(feature = "terminal")]
+                _error_msg()
             }
         }
     }

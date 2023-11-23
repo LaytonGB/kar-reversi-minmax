@@ -6,4 +6,6 @@ pub mod constants;
 pub mod history;
 pub mod player;
 pub mod reversi;
+
+#[cfg(feature = "terminal")]
 pub mod utils;

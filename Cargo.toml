@@ -9,3 +9,6 @@ edition = "2021"
 strum = { version = "0.25.0", features = ["derive"] }
 tabled = "0.14.0"
 text_io = "0.1.12"
+
+[features]
+terminal = []
