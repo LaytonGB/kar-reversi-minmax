@@ -1,20 +1,9 @@
 use bevy::prelude::*;
 
-#[derive(Component)]
-pub struct Coord {
-    pub row: usize,
-    pub col: usize,
-}
+use crate::reversi::Reversi;
 
 #[derive(Component)]
-pub struct Position {
-    pub x: i64,
-    pub y: i64,
-    pub z: i64,
-}
+pub(crate) struct BevyPiece;
 
-#[derive(Component)]
-pub struct Piece;
-
-#[derive(Component)]
-pub struct Board;
+#[derive(Resource, Default, Debug)]
+pub(crate) struct BevyReversi(pub Reversi);

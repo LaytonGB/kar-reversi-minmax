@@ -1,4 +1,4 @@
-#[derive(Clone, Copy, PartialEq, Eq, Hash, strum::Display, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, strum::EnumIter, strum::Display, Debug)]
 pub enum Player {
     Green,
     Red,

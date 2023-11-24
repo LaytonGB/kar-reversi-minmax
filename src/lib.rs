@@ -11,6 +11,8 @@ pub mod reversi;
 pub mod utils;
 
 #[cfg(feature = "game")]
+pub(crate) mod bevy_pieces;
+#[cfg(feature = "game")]
 pub(crate) mod bevy_scene;
 #[cfg(feature = "game")]
 pub(crate) mod bevy_structs;

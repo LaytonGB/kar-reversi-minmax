@@ -8,7 +8,7 @@ pub fn setup_scene(
 ) {
     // camera
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(0.0, 15.0, 0.0).looking_at(Vec3::ZERO, Vec3::Y),
+        transform: Transform::from_xyz(0.0, 15.0, -1.0).looking_at(Vec3::ZERO, Vec3::Y),
         ..default()
     });
     // game board base
@@ -17,7 +17,7 @@ pub fn setup_scene(
         material: materials.add(Color::DARK_GRAY.into()),
         ..default()
     });
-    // game board grid // TODO
+    // game board grid
     for x in -4..4 {
         for z in -4..4 {
             let color = if (x % 2_i32).abs() == (z % 2_i32).abs() {
@@ -46,7 +46,7 @@ pub fn setup_scene(
             shadows_enabled: true,
             ..default()
         },
-        transform: Transform::from_xyz(-4.0, 8.0, 0.0),
+        transform: Transform::from_xyz(0.0, 8.0, 4.0),
         ..default()
     });
 }
