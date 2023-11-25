@@ -11,12 +11,12 @@ pub(crate) fn draw_pieces(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut query: Query<(Entity, &Transform, &mut Handle<StandardMaterial>), With<BevyPiece>>,
+    mut queries: Query<(Entity, &Transform, &mut Handle<StandardMaterial>), With<BevyPiece>>,
     game: Res<BevyReversi>,
 ) {
     let mut drawn_pieces = HashSet::new();
-    for piece in query.iter_mut() {
-        let (mut piece, transform, mut material) = (commands.entity(piece.0), piece.1, piece.2);
+    for query in queries.iter_mut() {
+        let (mut piece, transform, mut material) = (commands.entity(query.0), query.1, query.2);
         let Vec3 { x, z, .. } = transform.translation;
         let coord = game_coord_to_reversi_coord((x, z));
         let player = game.0.board().get(coord);

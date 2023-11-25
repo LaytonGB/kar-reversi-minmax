@@ -4,7 +4,10 @@ use bevy_mod_picking::{
     prelude::On,
 };
 
-use crate::{bevy_interactions::click_grid_square, bevy_structs::BevySquare};
+use crate::{
+    bevy_highlight_constants::GRID_HIGHLIGHT, bevy_interactions::click_grid_square,
+    bevy_structs::BevySquare,
+};
 
 /// set up a simple 3D scene
 pub fn setup_scene(
@@ -39,6 +42,7 @@ pub fn setup_scene(
                     ..default()
                 },
                 BevySquare,
+                GRID_HIGHLIGHT,
                 On::<Pointer<Click>>::target_commands_mut(click_grid_square),
             ));
         }
