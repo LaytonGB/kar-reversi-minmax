@@ -49,7 +49,6 @@ impl Bot {
     }
 
     fn minmax(&mut self, game: &mut Reversi, depth: usize) -> (i64, Option<(usize, usize)>) {
-        // TODO combine branch logic
         if !game.anyone_can_move() || self.max_depth.is_some_and(|md| depth >= md) {
             (Self::eval(game), None)
         } else if !game.can_move(game.current_player()) {
@@ -60,26 +59,21 @@ impl Bot {
             game.switch_players();
             game.update_valid_moves();
             return res;
-        } else if game.current_player() == game.bot_player().unwrap().0 {
-            self.expansions += 1;
-            let (mut score, mut coord) = (i64::MIN, None);
-            for m in game.valid_moves().to_vec() {
-                game.place_piece(m);
-                game.switch_players();
-                game.update_valid_moves();
-                let (new_score, _) = self.minmax(game, depth + 1);
-                game.undo_turn();
-                game.update_valid_moves();
-
-                if new_score > score {
-                    score = new_score;
-                    coord = Some(m);
-                }
-            }
-            (score, coord)
         } else {
+            let (mut score, score_compare): (_, Box<dyn Fn(i64, i64) -> bool>) =
+                if game.current_player() == game.bot_player().unwrap().0 {
+                    (
+                        i64::MIN,
+                        Box::new(|new_score: i64, score: i64| new_score > score),
+                    )
+                } else {
+                    (
+                        i64::MAX,
+                        Box::new(|new_score: i64, score: i64| new_score < score),
+                    )
+                };
             self.expansions += 1;
-            let (mut score, mut coord) = (i64::MAX, None);
+            let mut coord = None;
             for m in game.valid_moves().to_vec() {
                 game.place_piece(m);
                 game.switch_players();
@@ -88,7 +82,7 @@ impl Bot {
                 game.undo_turn();
                 game.update_valid_moves();
 
-                if new_score < score {
+                if score_compare(new_score, score) {
                     score = new_score;
                     coord = Some(m);
                 }
