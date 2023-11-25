@@ -3,6 +3,7 @@ use strum::IntoEnumIterator;
 
 use crate::{
     bevy_structs::{BevyPiece, BevyReversi},
+    bevy_utils::*,
     player::Player,
 };
 
@@ -54,12 +55,4 @@ fn get_color_for_player(player: Player) -> Color {
         Player::Green => Color::GREEN,
         Player::Red => Color::RED,
     }
-}
-
-fn reversi_coord_to_game_coord((a, b): (usize, usize)) -> (f32, f32) {
-    (a as f32 - 3.5, b as f32 - 3.5)
-}
-
-fn game_coord_to_reversi_coord((a, b): (f32, f32)) -> (usize, usize) {
-    ((a + 3.5).round() as usize, (b + 3.5).round() as usize)
 }

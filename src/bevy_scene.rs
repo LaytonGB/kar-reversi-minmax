@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use crate::bevy_structs::BevySquare;
+
 /// set up a simple 3D scene
 pub fn setup_scene(
     mut commands: Commands,
@@ -25,12 +27,15 @@ pub fn setup_scene(
             } else {
                 Color::BLACK
             };
-            commands.spawn(PbrBundle {
-                mesh: meshes.add(shape::Box::new(1.0, 2.0, 1.0).into()),
-                material: materials.add(color.into()),
-                transform: Transform::from_xyz(x as f32 + 0.5, 0.2, z as f32 + 0.5),
-                ..default()
-            });
+            commands.spawn((
+                PbrBundle {
+                    mesh: meshes.add(shape::Box::new(1.0, 2.0, 1.0).into()),
+                    material: materials.add(color.into()),
+                    transform: Transform::from_xyz(x as f32 + 0.5, 0.2, z as f32 + 0.5),
+                    ..default()
+                },
+                BevySquare,
+            ));
         }
     }
     // background

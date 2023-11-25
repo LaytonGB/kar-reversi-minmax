@@ -16,3 +16,35 @@
 //         }
 //     }
 // }
+
+use std::{thread, time};
+
+use bevy::prelude::*;
+
+use crate::{
+    bevy_structs::{BevyReversi, BevySquare},
+    bevy_utils::*,
+};
+
+pub(crate) fn interactions(
+    mut commands: Commands,
+    interaction_query: Query<(&Interaction, &Transform), (Changed<Interaction>, With<BevySquare>)>,
+    mut game: ResMut<BevyReversi>,
+) {
+    for (&interaction, transform) in &interaction_query {
+        if interaction == Interaction::Pressed {
+            let Vec3 { x, z, .. } = transform.translation;
+            let coord = game_coord_to_reversi_coord((x, z));
+            game.0.place_piece(coord);
+            game.0.switch_players();
+
+            let sleep_time = time::Duration::from_millis(1500);
+            thread::sleep(sleep_time);
+            let game = game.0.clone();
+            let (_, bot) = game.0.bot_player.as_mut().unwrap();
+            let coord = bot.get_move(game);
+            game.0.place_piece(coord);
+            game.0.switch_players();
+        }
+    }
+}

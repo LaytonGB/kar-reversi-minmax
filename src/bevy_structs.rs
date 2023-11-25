@@ -1,9 +1,24 @@
 use bevy::prelude::*;
 
-use crate::reversi::Reversi;
+use crate::{
+    bot_algorithm::BotAlgorithm, bot_difficulty::BotDifficulty, player::Player, reversi::Reversi,
+};
+
+#[derive(Component)]
+pub(crate) struct BevySquare;
 
 #[derive(Component)]
 pub(crate) struct BevyPiece;
 
-#[derive(Resource, Default, Debug)]
+#[derive(Resource, Debug)]
 pub(crate) struct BevyReversi(pub Reversi);
+
+impl Default for BevyReversi {
+    fn default() -> Self {
+        Self(Reversi::new(Some((
+            Player::Red,
+            BotAlgorithm::MinMax,
+            BotDifficulty::Easy,
+        ))))
+    }
+}
