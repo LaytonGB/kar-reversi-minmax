@@ -12,25 +12,6 @@ use crate::{
     player::Player,
 };
 
-// pub(crate) fn highlight_valid_grid_squares(
-//     mut commands: Commands,
-//     queries: Query<(Entity, &Transform), With<BevySquare>>,
-//     game: Res<BevyReversi>,
-// ) {
-//     // FIXME sometimes squares get highlighted green
-//     for (square, transform) in &queries {
-//         let mut square = commands.entity(square);
-//         let Vec3 { x, z, .. } = transform.translation;
-//         let coord = game_coord_to_reversi_coord((x, z));
-//         if game.0.valid_moves().contains(&coord) {
-//             square.insert((PickHighlight, GRID_HIGHLIGHT));
-//         } else {
-//             square.remove::<(PickHighlight, Highlight<StandardMaterial>)>();
-//             square.log_components();
-//         }
-//     }
-// }
-
 pub fn click_grid_square<E>(_: &ListenerInput<E>, commands: &mut EntityCommands)
 where
     E: EntityEvent,
