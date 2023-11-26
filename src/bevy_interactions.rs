@@ -1,35 +1,34 @@
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use bevy_mod_picking::{
-    highlight::PickHighlight,
+    highlight::{Highlight, InitialHighlight, PickHighlight},
     prelude::{EntityEvent, ListenerInput},
 };
 
 use crate::{
+    bevy_highlight_constants::GRID_HIGHLIGHT,
     bevy_structs::{BevyReversi, BevySquare},
     bevy_utils::*,
     player::Player,
 };
 
-pub(crate) fn highlight_valid_grid_squares(
-    mut commands: Commands,
-    queries: Query<(Entity, &Transform), With<BevySquare>>,
-    game: Res<BevyReversi>,
-) {
-    // FIXME idk whats going on here
-    // squares that are not in valid moves are getting highlighted
-    if game.is_changed() {
-        for (square, transform) in &queries {
-            let mut square = commands.entity(square);
-            let Vec3 { x, z, .. } = transform.translation;
-            let coord = game_coord_to_reversi_coord((x, z));
-            if game.0.valid_moves().contains(&coord) {
-                square.insert(PickHighlight);
-            } else {
-                square.remove::<PickHighlight>();
-            }
-        }
-    }
-}
+// pub(crate) fn highlight_valid_grid_squares(
+//     mut commands: Commands,
+//     queries: Query<(Entity, &Transform), With<BevySquare>>,
+//     game: Res<BevyReversi>,
+// ) {
+//     // FIXME sometimes squares get highlighted green
+//     for (square, transform) in &queries {
+//         let mut square = commands.entity(square);
+//         let Vec3 { x, z, .. } = transform.translation;
+//         let coord = game_coord_to_reversi_coord((x, z));
+//         if game.0.valid_moves().contains(&coord) {
+//             square.insert((PickHighlight, GRID_HIGHLIGHT));
+//         } else {
+//             square.remove::<(PickHighlight, Highlight<StandardMaterial>)>();
+//             square.log_components();
+//         }
+//     }
+// }
 
 pub(crate) fn click_grid_square<E>(_: &ListenerInput<E>, commands: &mut EntityCommands)
 where
@@ -45,6 +44,7 @@ where
                 if dbg!(game.0.valid_moves()).contains(&coord) {
                     place_piece(&mut game, coord);
                     bot_make_move(game);
+                    // world_entity.remove::<InitialHighlight<StandardMaterial>>();
                 }
             }
         }
