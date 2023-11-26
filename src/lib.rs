@@ -11,6 +11,8 @@ pub mod reversi;
 pub mod utils;
 
 #[cfg(feature = "game")]
+pub(crate) mod bevy_game_state;
+#[cfg(feature = "game")]
 pub(crate) mod bevy_highlight_constants;
 #[cfg(feature = "game")]
 pub(crate) mod bevy_interactions;

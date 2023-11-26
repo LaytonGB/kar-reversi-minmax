@@ -4,13 +4,16 @@ use bevy_mod_picking::{
     prelude::On,
 };
 
-use crate::{bevy_interactions::click_grid_square, bevy_structs::BevySquare};
+use crate::{
+    bevy_game_state::GameState, bevy_interactions::click_grid_square, bevy_structs::BevySquare,
+};
 
 /// set up a simple 3D scene
 pub fn setup_scene(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    mut state: ResMut<NextState<GameState>>,
 ) {
     // camera
     commands.spawn(Camera3dBundle {
@@ -59,4 +62,7 @@ pub fn setup_scene(
         transform: Transform::from_xyz(0.0, 8.0, -4.0),
         ..default()
     });
+
+    // TODO add a main menu to remove the need for this
+    state.set(GameState::PlayerTurn);
 }

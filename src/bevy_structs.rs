@@ -11,6 +11,15 @@ pub(crate) struct BevySquare;
 pub(crate) struct BevyPiece;
 
 #[derive(Resource, Debug)]
+pub(crate) struct BevyAiDelay(pub Timer);
+
+impl Default for BevyAiDelay {
+    fn default() -> Self {
+        Self(Timer::from_seconds(1.5, TimerMode::Once))
+    }
+}
+
+#[derive(Resource, Debug)]
 pub(crate) struct BevyReversi(pub Reversi);
 
 impl Default for BevyReversi {
