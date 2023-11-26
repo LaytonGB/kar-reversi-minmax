@@ -4,8 +4,9 @@ use bevy_mod_picking::{debug::DebugPickingPlugin, DefaultPickingPlugins};
 use crate::{
     bevy_game_state::GameState,
     bevy_interactions::{bot_delay_reset, bot_make_move},
+    bevy_menu_interactions::handle_menu_buttons,
     /* bevy_interactions::highlight_valid_grid_squares, */ bevy_pieces::draw_pieces,
-    bevy_scene::setup_scene,
+    bevy_scenes::{board_setup, menu_setup, menu_teardown},
     bevy_structs::{BevyAiDelay, BevyReversi},
 };
 
@@ -21,7 +22,21 @@ pub fn run_game() {
         .init_resource::<Time>()
         .init_resource::<BevyAiDelay>()
         .add_state::<GameState>()
-        .add_systems(Startup, setup_scene)
+        // menu
+        .add_systems(OnEnter(GameState::Menu), menu_setup)
+        .add_systems(
+            Update,
+            handle_menu_buttons.run_if(in_state(GameState::Menu)),
+        )
+        .add_systems(OnExit(GameState::Menu), menu_teardown)
+        // game
+        .add_systems(
+            OnTransition {
+                from: GameState::Menu,
+                to: GameState::PlayerTurn,
+            },
+            board_setup,
+        )
         .add_systems(Update, draw_pieces)
         .add_systems(OnEnter(GameState::AiTurn), bot_delay_reset)
         .add_systems(Update, bot_make_move.run_if(in_state(GameState::AiTurn)))

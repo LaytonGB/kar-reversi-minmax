@@ -41,7 +41,7 @@ where
         if game.0.current_player() == Player::Green {
             if let Some(transform) = transform {
                 let Vec3 { x, z, .. } = transform.translation;
-                let coord = dbg!(game_coord_to_reversi_coord((x, z)));
+                let coord = game_coord_to_reversi_coord((x, z));
                 if game.0.valid_moves().contains(&coord) {
                     place_piece(&mut game, coord);
                     world_entity.world_mut().run_system_once(into_ai_turn_state);
@@ -72,7 +72,6 @@ pub(crate) fn bot_make_move(
     mut timer: ResMut<BevyAiDelay>,
     mut state: ResMut<NextState<GameState>>,
 ) {
-    dbg!(&timer);
     timer.0.tick(time.delta());
     if timer.0.just_finished() {
         let bot_move_coord = {

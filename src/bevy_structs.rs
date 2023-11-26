@@ -4,14 +4,20 @@ use crate::{
     bot_algorithm::BotAlgorithm, bot_difficulty::BotDifficulty, player::Player, reversi::Reversi,
 };
 
-#[derive(Component)]
-pub(crate) struct BevySquare;
+#[derive(Resource)]
+pub struct BevyMenuContent {
+    pub camera: Entity,
+    pub menu: Entity,
+}
 
 #[derive(Component)]
-pub(crate) struct BevyPiece;
+pub struct BevySquare;
+
+#[derive(Component)]
+pub struct BevyPiece;
 
 #[derive(Resource, Debug)]
-pub(crate) struct BevyAiDelay(pub Timer);
+pub struct BevyAiDelay(pub Timer);
 
 impl Default for BevyAiDelay {
     fn default() -> Self {
@@ -20,7 +26,7 @@ impl Default for BevyAiDelay {
 }
 
 #[derive(Resource, Debug)]
-pub(crate) struct BevyReversi(pub Reversi);
+pub struct BevyReversi(pub Reversi);
 
 impl Default for BevyReversi {
     fn default() -> Self {
