@@ -62,7 +62,6 @@ pub(crate) fn into_ai_turn_state(mut state: ResMut<NextState<GameState>>) {
 }
 
 pub(crate) fn bot_delay_reset(mut timer: ResMut<BevyAiDelay>) {
-    dbg!("DELAY RESET");
     let timer = &mut timer.0;
     timer.reset();
 }
