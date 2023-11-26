@@ -6,13 +6,13 @@ use bevy_mod_picking::{
 use strum::IntoEnumIterator;
 
 use crate::{
-    bevy_game_state::GameState,
     bevy_interactions::click_grid_square,
-    bevy_structs::{BevyMenuContent, BevySquare},
+    bevy_structs::{BevyMenuContent, BevyPlayerScore, BevyReversi, BevySquare, PieceCounts},
     bot_difficulty::BotDifficulty,
+    player::Player,
 };
 
-pub fn menu_setup(mut commands: Commands, mut state: ResMut<NextState<GameState>>) {
+pub fn menu_setup(mut commands: Commands) {
     // camera
     let camera_entity = commands
         .spawn(Camera2dBundle {
@@ -126,7 +126,7 @@ pub fn board_setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut state: ResMut<NextState<GameState>>,
+    game: Res<BevyReversi>,
 ) {
     // camera
     commands.spawn(Camera3dBundle {
@@ -175,4 +175,46 @@ pub fn board_setup(
         transform: Transform::from_xyz(0.0, 8.0, -4.0),
         ..default()
     });
+    // scores
+    commands
+        .spawn(NodeBundle {
+            style: Style {
+                margin: UiRect::all(Val::Px(6.0)),
+                width: Val::Percent(85.0),
+                height: Val::Percent(10.0),
+                justify_content: JustifyContent::SpaceBetween,
+                align_content: AlignContent::Center,
+                flex_direction: FlexDirection::Row,
+                column_gap: Val::Auto,
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .with_children(|parent| {
+            let text_style = TextStyle {
+                font: default(),
+                font_size: 24.0,
+                color: Color::WHITE,
+            };
+            let mut piece_counts = PieceCounts { green: 0, red: 0 };
+            for player in Player::iter() {
+                piece_counts.set(player, game.0.board().pieces_for_player(player).count());
+            }
+            for player in Player::iter() {
+                parent.spawn((
+                    TextBundle {
+                        text: Text::from_section(
+                            format!("{}: {}", player, piece_counts.get(player)),
+                            text_style.clone(),
+                        ),
+                        ..Default::default()
+                    },
+                    BevyPlayerScore {
+                        player,
+                        text_style: text_style.clone(),
+                        piece_counts,
+                    },
+                ));
+            }
+        });
 }

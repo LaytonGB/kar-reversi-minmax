@@ -16,6 +16,35 @@ pub struct BevySquare;
 #[derive(Component)]
 pub struct BevyPiece;
 
+#[derive(Component)]
+pub struct BevyPlayerScore {
+    pub player: Player,
+    pub text_style: TextStyle,
+    pub piece_counts: PieceCounts,
+}
+
+#[derive(Component, Clone, Copy, PartialEq, Eq, Debug)]
+pub struct PieceCounts {
+    pub green: usize,
+    pub red: usize,
+}
+
+impl PieceCounts {
+    pub fn get(&self, player: Player) -> usize {
+        match player {
+            Player::Green => self.green,
+            Player::Red => self.red,
+        }
+    }
+
+    pub fn set(&mut self, player: Player, value: usize) {
+        match player {
+            Player::Green => self.green = value,
+            Player::Red => self.red = value,
+        }
+    }
+}
+
 #[derive(Resource, Debug)]
 pub struct BevyAiDelay(pub Timer);
 

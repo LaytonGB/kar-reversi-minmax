@@ -3,10 +3,11 @@ use bevy::{
     prelude::*,
 };
 use bevy_mod_picking::prelude::{EntityEvent, ListenerInput};
+use strum::IntoEnumIterator;
 
 use crate::{
     bevy_game_state::GameState,
-    bevy_structs::{BevyAiDelay, BevyReversi},
+    bevy_structs::{BevyAiDelay, BevyPlayerScore, BevyReversi},
     bevy_utils::*,
     player::Player,
 };
@@ -30,7 +31,7 @@ use crate::{
 //     }
 // }
 
-pub(crate) fn click_grid_square<E>(_: &ListenerInput<E>, commands: &mut EntityCommands)
+pub fn click_grid_square<E>(_: &ListenerInput<E>, commands: &mut EntityCommands)
 where
     E: EntityEvent,
 {
@@ -57,16 +58,16 @@ fn place_piece(game: &mut Mut<'_, BevyReversi>, coord: (usize, usize)) {
     game.0.update_valid_moves();
 }
 
-pub(crate) fn into_ai_turn_state(mut state: ResMut<NextState<GameState>>) {
+pub fn into_ai_turn_state(mut state: ResMut<NextState<GameState>>) {
     state.set(GameState::AiTurn);
 }
 
-pub(crate) fn bot_delay_reset(mut timer: ResMut<BevyAiDelay>) {
+pub fn bot_delay_reset(mut timer: ResMut<BevyAiDelay>) {
     let timer = &mut timer.0;
     timer.reset();
 }
 
-pub(crate) fn bot_make_move(
+pub fn bot_make_move(
     mut game: ResMut<BevyReversi>,
     time: Res<Time>,
     mut timer: ResMut<BevyAiDelay>,
@@ -83,5 +84,37 @@ pub(crate) fn bot_make_move(
         game.0.switch_players();
         game.0.update_valid_moves();
         state.set(GameState::PlayerTurn);
+    }
+}
+
+pub fn update_player_scores(game: Res<BevyReversi>, mut query: Query<&mut BevyPlayerScore>) {
+    if game.is_changed() {
+        for mut bps in &mut query {
+            let pc = &mut bps.piece_counts;
+            for player in Player::iter() {
+                pc.set(player, game.0.board().pieces_for_player(player).count());
+            }
+        }
+    }
+}
+
+pub fn maintain_score_display(mut commands: Commands, query: Query<(Entity, &BevyPlayerScore)>) {
+    for (
+        entity,
+        BevyPlayerScore {
+            player,
+            text_style,
+            piece_counts,
+        },
+    ) in &query
+    {
+        let mut text = commands.entity(entity);
+        text.insert(TextBundle {
+            text: Text::from_section(
+                format!("{}: {}", player, piece_counts.get(*player)),
+                text_style.clone(),
+            ),
+            ..Default::default()
+        });
     }
 }
