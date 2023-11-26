@@ -175,7 +175,4 @@ pub fn board_setup(
         transform: Transform::from_xyz(0.0, 8.0, -4.0),
         ..default()
     });
-
-    // TODO add a main menu to remove the need for this
-    state.set(GameState::PlayerTurn);
 }
