@@ -56,25 +56,40 @@ pub fn bot_make_move(
 ) {
     timer.0.tick(time.delta());
     if timer.0.just_finished() {
-        let bot_move_coord = {
-            let game = game.0.clone();
-            let mut bot = game.bot_player().expect("bot").1.clone();
-            bot.get_move(game)
-        };
-        game.0.place_piece(bot_move_coord);
+        if game.0.can_move(Player::Red) {
+            let bot_move_coord = {
+                let game = game.0.clone();
+                let mut bot = game.bot_player().expect("bot").1.clone();
+                bot.get_move(game)
+            };
+            game.0.place_piece(bot_move_coord);
+        }
         game.0.switch_players();
         game.0.update_valid_moves();
         state.set(GameState::PlayerTurn);
     }
 }
 
-pub fn update_player_scores(game: Res<BevyReversi>, mut query: Query<&mut BevyPlayerScore>) {
+pub fn update_player_scores(
+    mut game: ResMut<BevyReversi>,
+    mut query: Query<&mut BevyPlayerScore>,
+    state: Res<State<GameState>>,
+    mut next_state: ResMut<NextState<GameState>>,
+) {
     if game.is_changed() {
         for mut bps in &mut query {
             let pc = &mut bps.piece_counts;
             for player in Player::iter() {
                 pc.set(player, game.0.board().pieces_for_player(player).count());
             }
+        }
+        if !game.0.anyone_can_move() {
+            next_state.set(GameState::End);
+            todo!("game over");
+        } else if *state.get() == GameState::PlayerTurn && !game.0.can_move(Player::Green) {
+            game.0.switch_players();
+            game.0.update_valid_moves();
+            next_state.set(GameState::AiTurn);
         }
     }
 }
