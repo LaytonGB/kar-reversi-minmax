@@ -23,6 +23,9 @@ pub struct BevyPlayerScore {
     pub piece_counts: PieceCounts,
 }
 
+#[derive(Component)]
+pub struct BevyCurrentPlayer;
+
 #[derive(Component, Clone, Copy, PartialEq, Eq, Debug)]
 pub struct PieceCounts {
     pub green: usize,

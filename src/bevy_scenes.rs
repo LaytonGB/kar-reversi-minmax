@@ -7,7 +7,9 @@ use strum::IntoEnumIterator;
 
 use crate::{
     bevy_interactions::click_grid_square,
-    bevy_structs::{BevyMenuContent, BevyPlayerScore, BevyReversi, BevySquare, PieceCounts},
+    bevy_structs::{
+        BevyCurrentPlayer, BevyMenuContent, BevyPlayerScore, BevyReversi, BevySquare, PieceCounts,
+    },
     bot_difficulty::BotDifficulty,
     player::Player,
 };
@@ -217,4 +219,24 @@ pub fn board_setup(
                 ));
             }
         });
+    // current player
+    commands.spawn((
+        TextBundle::from_section(
+            format!("Turn: {}", game.0.current_player()),
+            TextStyle {
+                font: default(),
+                font_size: 26.0,
+                color: Color::WHITE,
+            },
+        )
+        .with_style(Style {
+            top: Val::ZERO,
+            left: Val::Percent(50.0),
+            padding: UiRect::all(Val::Px(6.0)),
+            justify_content: JustifyContent::Center,
+            ..Default::default()
+        })
+        .with_text_alignment(TextAlignment::Center),
+        BevyCurrentPlayer,
+    ));
 }

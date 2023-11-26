@@ -4,7 +4,8 @@ use bevy_mod_picking::{debug::DebugPickingPlugin, DefaultPickingPlugins};
 use crate::{
     bevy_game_state::GameState,
     bevy_interactions::{
-        bot_delay_reset, bot_make_move, maintain_score_display, update_player_scores,
+        bot_delay_reset, bot_make_move, maintain_score_display, update_current_player,
+        update_player_scores,
     },
     bevy_menu_interactions::handle_menu_buttons,
     /* bevy_interactions::highlight_valid_grid_squares, */ bevy_pieces::draw_pieces,
@@ -42,9 +43,19 @@ pub fn run_game() {
         .add_systems(
             Update,
             (
-                (draw_pieces, update_player_scores, maintain_score_display)
+                (
+                    draw_pieces,
+                    update_player_scores,
+                    update_current_player,
+                    maintain_score_display,
+                )
                     .run_if(in_state(GameState::PlayerTurn)),
-                (draw_pieces, update_player_scores, maintain_score_display)
+                (
+                    draw_pieces,
+                    update_player_scores,
+                    update_current_player,
+                    maintain_score_display,
+                )
                     .run_if(in_state(GameState::AiTurn)),
             ),
         )

@@ -7,7 +7,7 @@ use strum::IntoEnumIterator;
 
 use crate::{
     bevy_game_state::GameState,
-    bevy_structs::{BevyAiDelay, BevyPlayerScore, BevyReversi},
+    bevy_structs::{BevyAiDelay, BevyCurrentPlayer, BevyPlayerScore, BevyReversi},
     bevy_utils::*,
     player::Player,
 };
@@ -67,6 +67,25 @@ pub fn bot_make_move(
         game.0.switch_players();
         game.0.update_valid_moves();
         state.set(GameState::PlayerTurn);
+    }
+}
+
+pub fn update_current_player(
+    game: Res<BevyReversi>,
+    mut query: Query<&mut Text, With<BevyCurrentPlayer>>,
+) {
+    if game.is_changed() {
+        for mut text in &mut query {
+            text.set(Box::new(Text::from_section(
+                format!("Turn: {}", game.0.current_player()),
+                TextStyle {
+                    font: default(),
+                    font_size: 26.0,
+                    color: Color::WHITE,
+                },
+            )))
+            .ok();
+        }
     }
 }
 
