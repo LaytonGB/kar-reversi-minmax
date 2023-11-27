@@ -5,13 +5,13 @@ use bevy_mod_picking::{
 };
 use strum::IntoEnumIterator;
 
-use crate::{
-    bevy_interactions::click_grid_square,
-    bevy_structs::{
+use crate::{bot_difficulty::BotDifficulty, player::Player};
+
+use crate::game::{
+    interactions::click_grid_square,
+    structs::{
         BevyCurrentPlayer, BevyMenuContent, BevyPlayerScore, BevyReversi, BevySquare, PieceCounts,
     },
-    bot_difficulty::BotDifficulty,
-    player::Player,
 };
 
 pub fn menu_setup(mut commands: Commands) {

@@ -1,16 +1,16 @@
 use bevy::prelude::*;
 use bevy_mod_picking::{debug::DebugPickingPlugin, DefaultPickingPlugins};
 
-use crate::{
-    bevy_game_state::GameState,
-    bevy_interactions::{
+use crate::game::{
+    game_state::GameState,
+    interactions::{
         bot_delay_reset, bot_make_move, maintain_score_display, update_current_player,
         update_player_scores,
     },
-    bevy_menu_interactions::handle_menu_buttons,
-    /* bevy_interactions::highlight_valid_grid_squares, */ bevy_pieces::draw_pieces,
-    bevy_scenes::{board_setup, menu_setup, menu_teardown},
-    bevy_structs::{BevyAiDelay, BevyReversi},
+    menu_interactions::handle_menu_buttons,
+    /* interactions::highlight_valid_grid_squares, */ pieces::draw_pieces,
+    scenes::{board_setup, menu_setup, menu_teardown},
+    structs::{BevyAiDelay, BevyReversi},
 };
 
 pub fn run_game() {

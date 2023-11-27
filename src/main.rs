@@ -31,7 +31,7 @@ fn main() {
 
     #[cfg(feature = "game")]
     {
-        use kar_reversi_minmax::game;
+        use kar_reversi_minmax::game::game;
 
         game::run_game();
     }

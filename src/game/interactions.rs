@@ -5,12 +5,13 @@ use bevy::{
 use bevy_mod_picking::prelude::{EntityEvent, ListenerInput};
 use strum::IntoEnumIterator;
 
-use crate::{
-    bevy_game_state::GameState,
-    bevy_structs::{BevyAiDelay, BevyCurrentPlayer, BevyPlayerScore, BevyReversi},
-    bevy_utils::*,
-    player::Player,
+use crate::game::{
+    game_state::GameState,
+    structs::{BevyAiDelay, BevyCurrentPlayer, BevyPlayerScore, BevyReversi},
+    utils::*,
 };
+
+use crate::player::Player;
 
 pub fn click_grid_square<E>(_: &ListenerInput<E>, commands: &mut EntityCommands)
 where

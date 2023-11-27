@@ -11,20 +11,4 @@ pub mod reversi;
 pub mod utils;
 
 #[cfg(feature = "game")]
-pub(crate) mod bevy_game_state;
-#[cfg(feature = "game")]
-pub(crate) mod bevy_highlight_constants;
-#[cfg(feature = "game")]
-pub(crate) mod bevy_interactions;
-#[cfg(feature = "game")]
-pub(crate) mod bevy_menu_interactions;
-#[cfg(feature = "game")]
-pub(crate) mod bevy_pieces;
-#[cfg(feature = "game")]
-pub(crate) mod bevy_scenes;
-#[cfg(feature = "game")]
-pub(crate) mod bevy_structs;
-#[cfg(feature = "game")]
-pub(crate) mod bevy_utils;
-#[cfg(feature = "game")]
 pub mod game;

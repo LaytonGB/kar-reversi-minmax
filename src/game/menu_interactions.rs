@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
-use crate::{
-    bevy_game_state::GameState,
-    bevy_highlight_constants::{BUTTON_DEFAULT, BUTTON_HOVERED},
+use crate::game::{
+    game_state::GameState,
+    highlight_constants::{BUTTON_DEFAULT, BUTTON_HOVERED},
 };
 
 pub fn handle_menu_buttons(

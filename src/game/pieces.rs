@@ -1,10 +1,11 @@
 use bevy::{prelude::*, utils::HashSet};
 use strum::IntoEnumIterator;
 
-use crate::{
-    bevy_structs::{BevyPiece, BevyReversi},
-    bevy_utils::*,
-    player::Player,
+use crate::player::Player;
+
+use crate::game::{
+    structs::{BevyPiece, BevyReversi},
+    utils::*,
 };
 
 pub(crate) fn draw_pieces(
