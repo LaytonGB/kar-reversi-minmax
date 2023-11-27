@@ -105,7 +105,6 @@ pub fn update_player_scores(
         }
         if !game.0.anyone_can_move() {
             next_state.set(GameState::End);
-            todo!("game over");
         } else if *state.get() == GameState::PlayerTurn && !game.0.can_move(Player::Green) {
             game.0.switch_players();
             game.0.update_valid_moves();
@@ -133,4 +132,37 @@ pub fn maintain_score_display(mut commands: Commands, query: Query<(Entity, &Bev
             ..Default::default()
         });
     }
+}
+
+pub fn show_game_over(world: &mut World) {
+    let winner = world
+        .resource::<BevyReversi>()
+        .0
+        .get_winner()
+        .expect("winning player");
+    world.spawn(
+        TextBundle {
+            text: Text::from_section(
+                format!("GAME OVER\nWinner: {}", winner),
+                TextStyle {
+                    font: default(),
+                    font_size: 40.0,
+                    color: Color::WHITE,
+                },
+            ),
+            style: Style {
+                padding: UiRect::all(Val::Px(12.0)),
+                margin: UiRect::all(Val::Auto),
+                ..Default::default()
+            },
+            ..Default::default()
+        }
+        .with_text_alignment(TextAlignment::Center)
+        .with_background_color(Color::Hsla {
+            hue: 0.0,
+            saturation: 0.0,
+            lightness: 0.0,
+            alpha: 0.95,
+        }),
+    );
 }

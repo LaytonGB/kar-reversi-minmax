@@ -13,6 +13,8 @@ use crate::game::{
     structs::{BevyAiDelay, BevyReversi},
 };
 
+use super::interactions::show_game_over;
+
 pub fn run_game() {
     App::new()
         .add_plugins((
@@ -65,5 +67,7 @@ pub fn run_game() {
         //     Update,
         //     highlight_valid_grid_squares.run_if(resource_changed::<BevyReversi>()),
         // )
+        // end of game
+        .add_systems(OnEnter(GameState::End), show_game_over)
         .run();
 }
