@@ -14,6 +14,8 @@ use crate::game::{
     },
 };
 
+use super::structs::BevyBotDifficulty;
+
 pub fn menu_setup(mut commands: Commands) {
     // camera
     let camera_entity = commands
@@ -82,15 +84,18 @@ pub fn menu_setup(mut commands: Commands) {
                 .with_children(|parent| {
                     for difficulty in BotDifficulty::iter() {
                         parent
-                            .spawn(ButtonBundle {
-                                background_color: BackgroundColor(Color::BLACK),
-                                style: Style {
-                                    padding: UiRect::all(Val::Px(6.0)),
-                                    margin: UiRect::all(Val::Px(6.0)),
+                            .spawn((
+                                ButtonBundle {
+                                    background_color: BackgroundColor(Color::BLACK),
+                                    style: Style {
+                                        padding: UiRect::all(Val::Px(6.0)),
+                                        margin: UiRect::all(Val::Px(6.0)),
+                                        ..Default::default()
+                                    },
                                     ..Default::default()
                                 },
-                                ..Default::default()
-                            })
+                                BevyBotDifficulty(difficulty),
+                            ))
                             .with_children(|btn| {
                                 btn.spawn(TextBundle {
                                     text: Text::from_section(

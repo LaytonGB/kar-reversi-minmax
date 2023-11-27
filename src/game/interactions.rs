@@ -6,7 +6,7 @@ use bevy_mod_picking::prelude::{EntityEvent, ListenerInput};
 use strum::IntoEnumIterator;
 
 use crate::game::{
-    game_state::GameState,
+    states::GameState,
     structs::{BevyAiDelay, BevyCurrentPlayer, BevyPlayerScore, BevyReversi},
     utils::*,
 };

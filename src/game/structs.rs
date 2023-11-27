@@ -57,6 +57,9 @@ impl Default for BevyAiDelay {
     }
 }
 
+#[derive(Component, Debug)]
+pub struct BevyBotDifficulty(pub BotDifficulty);
+
 #[derive(Resource, Debug)]
 pub struct BevyReversi(pub Reversi);
 

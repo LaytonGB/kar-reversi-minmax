@@ -44,7 +44,6 @@ impl Reversi {
                             BotDifficulty::Easy => Some(1),
                             BotDifficulty::Medium => Some(3),
                             BotDifficulty::Hard => Some(8),
-                            BotDifficulty::Insane => None,
                         },
                     ),
                 ))
