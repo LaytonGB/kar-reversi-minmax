@@ -151,7 +151,7 @@ pub fn show_game_over(world: &mut World) {
                 },
             ),
             style: Style {
-                padding: UiRect::all(Val::Px(12.0)),
+                padding: UiRect::all(Val::Px(32.0)),
                 margin: UiRect::all(Val::Auto),
                 ..Default::default()
             },

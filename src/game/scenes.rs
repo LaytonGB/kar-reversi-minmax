@@ -182,14 +182,20 @@ pub fn board_setup(
         transform: Transform::from_xyz(0.0, 8.0, -4.0),
         ..default()
     });
-    // scores
+    // scores and current player
     commands
         .spawn(NodeBundle {
             style: Style {
-                margin: UiRect::all(Val::Px(6.0)),
-                width: Val::Percent(85.0),
+                width: Val::Percent(100.0),
                 height: Val::Percent(10.0),
-                justify_content: JustifyContent::SpaceBetween,
+                padding: UiRect {
+                    left: Val::Percent(10.0),
+                    right: Val::Percent(10.0),
+                    top: Val::Px(16.0),
+                    bottom: Val::ZERO,
+                },
+                margin: UiRect::all(Val::Px(6.0)),
+                justify_content: JustifyContent::SpaceEvenly,
                 align_content: AlignContent::Center,
                 flex_direction: FlexDirection::Row,
                 column_gap: Val::Auto,
@@ -197,7 +203,7 @@ pub fn board_setup(
             },
             ..Default::default()
         })
-        .with_children(|parent| {
+        .with_children(|parent: &mut ChildBuilder<'_, '_, '_>| {
             let text_style = TextStyle {
                 font: default(),
                 font_size: 24.0,
@@ -207,41 +213,30 @@ pub fn board_setup(
             for player in Player::iter() {
                 piece_counts.set(player, game.0.board().pieces_for_player(player).count());
             }
-            for player in Player::iter() {
-                parent.spawn((
-                    TextBundle {
-                        text: Text::from_section(
+            let parent_spawn_score_text =
+                |parent: &mut ChildBuilder<'_, '_, '_>, player: Player| {
+                    parent.spawn((
+                        TextBundle::from_section(
                             format!("{}: {}", player, piece_counts.get(player)),
                             text_style.clone(),
-                        ),
-                        ..Default::default()
-                    },
-                    BevyPlayerScore {
-                        player,
-                        text_style: text_style.clone(),
-                        piece_counts,
-                    },
-                ));
-            }
+                        )
+                        .with_text_alignment(TextAlignment::Center),
+                        BevyPlayerScore {
+                            player,
+                            text_style: text_style.clone(),
+                            piece_counts,
+                        },
+                    ));
+                };
+            parent_spawn_score_text(parent, Player::Green);
+            parent.spawn((
+                TextBundle::from_section(
+                    format!("Turn: {}", game.0.current_player()),
+                    text_style.clone(),
+                )
+                .with_text_alignment(TextAlignment::Center),
+                BevyCurrentPlayer,
+            ));
+            parent_spawn_score_text(parent, Player::Red);
         });
-    // current player
-    commands.spawn((
-        TextBundle::from_section(
-            format!("Turn: {}", game.0.current_player()),
-            TextStyle {
-                font: default(),
-                font_size: 26.0,
-                color: Color::WHITE,
-            },
-        )
-        .with_style(Style {
-            top: Val::ZERO,
-            left: Val::Percent(50.0),
-            padding: UiRect::all(Val::Px(6.0)),
-            justify_content: JustifyContent::Center,
-            ..Default::default()
-        })
-        .with_text_alignment(TextAlignment::Center),
-        BevyCurrentPlayer,
-    ));
 }
