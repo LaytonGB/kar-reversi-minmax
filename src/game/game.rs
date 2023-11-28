@@ -6,14 +6,17 @@ use crate::game::{
         bot_delay_reset, bot_make_move, maintain_score_display, update_current_player,
         update_player_scores,
     },
-    menu_interactions::handle_menu_buttons,
+    menu_interactions::handle_difficulty_buttons,
     /* interactions::highlight_valid_grid_squares, */ pieces::draw_pieces,
     scenes::{board_setup, menu_setup, menu_teardown},
     states::GameState,
     structs::{BevyAiDelay, BevyReversi},
 };
 
-use super::interactions::{show_game_over, update_grid_highlights};
+use super::{
+    interactions::{show_game_over, update_grid_highlights},
+    menu_interactions::{handle_algorithm_buttons, handle_play_button},
+};
 
 pub fn run_game() {
     App::new()
@@ -31,7 +34,12 @@ pub fn run_game() {
         .add_systems(OnEnter(GameState::Menu), menu_setup)
         .add_systems(
             Update,
-            handle_menu_buttons.run_if(in_state(GameState::Menu)),
+            (
+                handle_difficulty_buttons,
+                handle_algorithm_buttons,
+                handle_play_button,
+            )
+                .run_if(in_state(GameState::Menu)),
         )
         .add_systems(OnExit(GameState::Menu), menu_teardown)
         // game

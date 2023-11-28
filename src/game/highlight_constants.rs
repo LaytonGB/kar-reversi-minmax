@@ -16,3 +16,9 @@ pub const BUTTON_HOVERED: Color = Color::Hsla {
     lightness: 0.15,
     alpha: 1.0,
 };
+pub const BUTTON_SELECTED: Color = Color::Hsla {
+    hue: 110.0,
+    saturation: 1.0,
+    lightness: 0.15,
+    alpha: 1.0,
+};

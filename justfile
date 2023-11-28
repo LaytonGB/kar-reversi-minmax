@@ -1,6 +1,10 @@
 # use powershell not sh
 set shell := ["powershell.exe", "-c"] 
 
+# run standalone game in dev mode
+run-game:
+    cargo run --no-default-features -F game
+
 # package wasm into docs folder
 package-wasm:
     wasm-bindgen --out-dir ./docs/ --target web ./target/wasm32-unknown-unknown/release/kar_reversi_minmax.wasm

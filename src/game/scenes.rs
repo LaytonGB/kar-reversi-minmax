@@ -6,7 +6,7 @@ use bevy_mod_picking::{
 };
 use strum::IntoEnumIterator;
 
-use crate::{bot_difficulty::BotDifficulty, player::Player};
+use crate::{bot_algorithm::BotAlgorithm, bot_difficulty::BotDifficulty, player::Player};
 
 use crate::game::{
     interactions::click_grid_square,
@@ -15,7 +15,10 @@ use crate::game::{
     },
 };
 
-use super::{highlight_constants::GRID_HIGHLIGHT, structs::BevyBotDifficulty};
+use super::{
+    highlight_constants::GRID_HIGHLIGHT,
+    structs::{BevyBotAlgorithm, BevyBotDifficulty, BevyGameConfig, BevyPlayButton},
+};
 
 pub fn menu_setup(mut commands: Commands) {
     // camera
@@ -58,6 +61,8 @@ pub fn menu_setup(mut commands: Commands) {
                 ),
                 ..Default::default()
             });
+
+            // difficulty
             parent.spawn(TextBundle {
                 text: Text::from_section(
                     "Difficulty",
@@ -117,17 +122,117 @@ pub fn menu_setup(mut commands: Commands) {
                             });
                     }
                 });
+
+            // algorithm
+            parent.spawn(TextBundle {
+                text: Text::from_section(
+                    "Algorithm",
+                    TextStyle {
+                        font: default(),
+                        font_size: 26.0,
+                        color: Color::Hsla {
+                            hue: 0.0,
+                            saturation: 0.0,
+                            lightness: 0.85,
+                            alpha: 1.0,
+                        },
+                    },
+                ),
+                ..Default::default()
+            });
+            parent
+                .spawn(NodeBundle {
+                    style: Style {
+                        flex_direction: FlexDirection::Row,
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                })
+                .with_children(|parent| {
+                    for algorithm in BotAlgorithm::iter() {
+                        parent
+                            .spawn((
+                                ButtonBundle {
+                                    background_color: BackgroundColor(Color::BLACK),
+                                    style: Style {
+                                        padding: UiRect::all(Val::Px(6.0)),
+                                        margin: UiRect::all(Val::Px(6.0)),
+                                        ..Default::default()
+                                    },
+                                    ..Default::default()
+                                },
+                                BevyBotAlgorithm(algorithm),
+                            ))
+                            .with_children(|btn| {
+                                btn.spawn(TextBundle {
+                                    text: Text::from_section(
+                                        algorithm.to_string(),
+                                        TextStyle {
+                                            font: default(),
+                                            font_size: 16.0,
+                                            color: Color::Hsla {
+                                                hue: 0.0,
+                                                saturation: 0.0,
+                                                lightness: 0.7,
+                                                alpha: 1.0,
+                                            },
+                                        },
+                                    ),
+                                    ..Default::default()
+                                });
+                            });
+                    }
+                });
+
+            // confirm button
+            parent
+                .spawn((
+                    ButtonBundle {
+                        background_color: BackgroundColor(Color::BLACK),
+                        style: Style {
+                            padding: UiRect::all(Val::Px(6.0)),
+                            margin: UiRect::top(Val::Px(36.0)),
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                    },
+                    BevyPlayButton,
+                ))
+                .with_children(|btn| {
+                    btn.spawn((
+                        TextBundle {
+                            text: Text::from_section(
+                                "Play",
+                                TextStyle {
+                                    font: default(),
+                                    font_size: 32.0,
+                                    color: Color::Hsla {
+                                        hue: 0.0,
+                                        saturation: 0.0,
+                                        lightness: 0.3,
+                                        alpha: 1.0,
+                                    },
+                                },
+                            ),
+                            ..Default::default()
+                        },
+                        BevyPlayButton,
+                    ));
+                });
         })
         .id();
     commands.insert_resource(BevyMenuContent {
         camera: camera_entity,
         menu: menu_entity,
+
+        config: BevyGameConfig::default(),
     })
 }
 
 pub fn menu_teardown(mut commands: Commands, menu_data: Res<BevyMenuContent>) {
     commands.entity(menu_data.camera).despawn_recursive();
     commands.entity(menu_data.menu).despawn_recursive();
+    commands.remove_resource::<BevyMenuContent>();
 }
 
 pub fn board_setup(

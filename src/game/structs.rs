@@ -4,10 +4,17 @@ use crate::{
     bot_algorithm::BotAlgorithm, bot_difficulty::BotDifficulty, player::Player, reversi::Reversi,
 };
 
+#[derive(Default, Debug)]
+pub struct BevyGameConfig {
+    pub difficulty: Option<BotDifficulty>,
+    pub algorithm: Option<BotAlgorithm>,
+}
+
 #[derive(Resource)]
 pub struct BevyMenuContent {
     pub camera: Entity,
     pub menu: Entity,
+    pub config: BevyGameConfig,
 }
 
 #[derive(Component)]
@@ -59,6 +66,12 @@ impl Default for BevyAiDelay {
 
 #[derive(Component, Debug)]
 pub struct BevyBotDifficulty(pub BotDifficulty);
+
+#[derive(Component, Debug)]
+pub struct BevyBotAlgorithm(pub BotAlgorithm);
+
+#[derive(Component, Debug)]
+pub struct BevyPlayButton;
 
 #[derive(Resource, Debug)]
 pub struct BevyReversi(pub Reversi);
