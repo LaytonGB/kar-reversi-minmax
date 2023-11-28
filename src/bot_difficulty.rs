@@ -3,4 +3,5 @@ pub enum BotDifficulty {
     Easy,
     Medium,
     Hard,
+    Insane,
 }

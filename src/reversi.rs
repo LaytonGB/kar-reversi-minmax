@@ -8,6 +8,8 @@ use crate::{
 #[cfg(feature = "terminal")]
 use crate::utils;
 #[cfg(feature = "terminal")]
+use if_chain::if_chain;
+#[cfg(feature = "terminal")]
 use text_io::try_read;
 
 #[derive(Clone, Debug)]
@@ -36,14 +38,16 @@ impl Reversi {
         Self {
             board: Board::new(8),
             bot_player: bot_player.map_or(None, |(p, al, dif)| {
+                type D = BotDifficulty;
                 Some((
                     p,
                     Bot::new(
                         al,
                         match dif {
-                            BotDifficulty::Easy => Some(1),
-                            BotDifficulty::Medium => Some(3),
-                            BotDifficulty::Hard => Some(8),
+                            D::Easy => Some(1),
+                            D::Medium => Some(4),
+                            D::Hard => Some(8),
+                            D::Insane => Some(12),
                         },
                     ),
                 ))
@@ -54,8 +58,14 @@ impl Reversi {
     }
 
     #[cfg(feature = "terminal")]
-    pub fn show_board(&self) {
+    pub fn show_board(&self, with_metrics: bool) {
         utils::clear_terminal();
+        if_chain!(if with_metrics;
+            if let Some((_, bot)) = self.bot_player.as_ref();
+            then {
+                bot.show_metrics();
+            }
+        );
         println!(
             "{}: {} | {}: {}",
             Player::Green,
@@ -72,14 +82,14 @@ impl Reversi {
         use std::thread;
 
         while self.anyone_can_move() {
-            self.show_board();
-
-            self.update_valid_moves();
-            if self
+            let current_player_is_bot = self
                 .bot_player
                 .as_ref()
-                .is_some_and(|(p, _)| *p == self.current_player)
-            {
+                .is_some_and(|(p, _)| *p == self.current_player);
+            self.show_board(!current_player_is_bot);
+
+            self.update_valid_moves();
+            if current_player_is_bot {
                 let sleep_time = time::Duration::from_millis(1500);
                 thread::sleep(sleep_time);
                 let game = self.clone();
@@ -95,7 +105,7 @@ impl Reversi {
             self.switch_players();
         }
 
-        self.show_board();
+        self.show_board(true);
         self.show_winner(self.get_winner());
     }
 

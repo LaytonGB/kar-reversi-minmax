@@ -1,3 +1,5 @@
+use kar_reversi_minmax::utils;
+
 fn main() {
     #[cfg(all(feature = "terminal", feature = "game"))]
     compile_error!("cannot enable both terminal and game");
@@ -19,13 +21,21 @@ fn main() {
             }
             println!();
             difficulty = try_read!().ok();
+            utils::clear_terminal();
         }
 
-        let mut game = Reversi::new(Some((
-            Player::Red,
-            BotAlgorithm::MinMax,
-            difficulty.unwrap(),
-        )));
+        let mut algorithm: Option<BotAlgorithm> = None;
+        while algorithm.is_none() {
+            println!("Enter an algorithm (caps matter):");
+            for d in BotAlgorithm::iter() {
+                println!("{}", d);
+            }
+            println!();
+            algorithm = try_read!().ok();
+            utils::clear_terminal();
+        }
+
+        let mut game = Reversi::new(Some((Player::Red, algorithm.unwrap(), difficulty.unwrap())));
         game.start()
     }
 
