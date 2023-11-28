@@ -9,10 +9,13 @@ use bevy_mod_picking::{
 };
 use strum::IntoEnumIterator;
 
-use crate::game::{
-    states::GameState,
-    structs::{BevyAiDelay, BevyCurrentPlayer, BevyPlayerScore, BevyReversi},
-    utils::*,
+use crate::{
+    game::{
+        states::GameState,
+        structs::{BevyAiDelay, BevyCurrentPlayer, BevyPlayerScore, BevyReversi},
+        utils::*,
+    },
+    reversi::Reversi,
 };
 
 use crate::player::Player;
@@ -89,7 +92,7 @@ where
 }
 
 fn place_piece(game: &mut Mut<'_, BevyReversi>, coord: (usize, usize)) {
-    game.0.place_piece(coord);
+    game.0.place_piece_and_add_history(coord);
     game.0.switch_players();
     game.0.update_valid_moves();
 }
@@ -111,13 +114,13 @@ pub fn bot_make_move(
 ) {
     timer.0.tick(time.delta());
     if timer.0.just_finished() {
-        if game.0.can_move(Player::Red) {
+        if Reversi::can_move(game.0.board(), Player::Red) {
             let bot_move_coord = {
                 let game = game.0.clone();
                 let mut bot = game.bot_player().expect("bot").1.clone();
                 bot.get_move(game)
             };
-            game.0.place_piece(bot_move_coord);
+            game.0.place_piece_and_add_history(bot_move_coord);
         }
         game.0.switch_players();
         game.0.update_valid_moves();
@@ -157,9 +160,11 @@ pub fn update_player_scores(
                 pc.set(player, game.0.board().pieces_for_player(player).count());
             }
         }
-        if !game.0.anyone_can_move() {
+        if !Reversi::anyone_can_move(game.0.board()) {
             next_state.set(GameState::End);
-        } else if *state.get() == GameState::PlayerTurn && !game.0.can_move(Player::Green) {
+        } else if *state.get() == GameState::PlayerTurn
+            && !Reversi::can_move(game.0.board(), Player::Green)
+        {
             game.0.switch_players();
             game.0.update_valid_moves();
             next_state.set(GameState::AiTurn);

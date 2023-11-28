@@ -1,6 +1,7 @@
 {
-    // "rust-analyzer.cargo.noDefaultFeatures": true,
-    // "rust-analyzer.cargo.features": [
-    //     "game"
-    // ],
+    "rust-analyzer.cargo.noDefaultFeatures": true,
+    "rust-analyzer.cargo.features": [
+        "game"
+    ],
+    "rust-analyzer.showUnlinkedFileNotification": false,
 }
