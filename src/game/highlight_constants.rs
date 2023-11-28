@@ -7,7 +7,6 @@ pub const GRID_HIGHLIGHT: Highlight<StandardMaterial> = Highlight {
         ..matl.to_owned()
     })),
     pressed: Some(HighlightKind::new_dynamic(|matl| matl.to_owned())),
-    selected: Some(HighlightKind::new_dynamic(|matl| matl.to_owned())),
 };
 
 pub const BUTTON_DEFAULT: Color = Color::BLACK;

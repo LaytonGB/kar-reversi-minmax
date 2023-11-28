@@ -13,7 +13,7 @@ use crate::game::{
     structs::{BevyAiDelay, BevyReversi},
 };
 
-use super::interactions::show_game_over;
+use super::interactions::{show_game_over, update_grid_highlights};
 
 pub fn run_game() {
     App::new()
@@ -59,6 +59,13 @@ pub fn run_game() {
                     maintain_score_display,
                 )
                     .run_if(in_state(GameState::AiTurn)),
+            ),
+        )
+        .add_systems(
+            PostUpdate,
+            (
+                update_grid_highlights.run_if(in_state(GameState::PlayerTurn)),
+                update_grid_highlights.run_if(in_state(GameState::AiTurn)),
             ),
         )
         .add_systems(OnEnter(GameState::AiTurn), bot_delay_reset)

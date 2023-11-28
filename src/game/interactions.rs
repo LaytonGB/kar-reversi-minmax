@@ -2,7 +2,11 @@ use bevy::{
     ecs::system::{EntityCommands, RunSystemOnce},
     prelude::*,
 };
-use bevy_mod_picking::prelude::{EntityEvent, ListenerInput};
+use bevy_mod_picking::{
+    focus::PickingInteraction,
+    highlight::{InitialHighlight, PickHighlight},
+    prelude::{EntityEvent, ListenerInput},
+};
 use strum::IntoEnumIterator;
 
 use crate::game::{
@@ -12,6 +16,56 @@ use crate::game::{
 };
 
 use crate::player::Player;
+
+use super::structs::BevySquare;
+
+pub fn update_grid_highlights(
+    mut commands: Commands,
+    game: Res<BevyReversi>,
+    state: Res<State<GameState>>,
+    query: Query<
+        (
+            Entity,
+            &Transform,
+            Option<&InitialHighlight<StandardMaterial>>,
+        ),
+        With<BevySquare>,
+    >,
+) {
+    if !game.is_changed() {
+        return;
+    }
+
+    let remove_highlight_components =
+        |mut entity: EntityCommands<'_, '_, '_>,
+         highlight: Option<&InitialHighlight<StandardMaterial>>| {
+            if let Some(highlight) = highlight {
+                entity.insert(highlight.initial.clone());
+            }
+            entity.remove::<(
+                PickHighlight,
+                InitialHighlight<StandardMaterial>,
+                PickingInteraction,
+            )>();
+        };
+    if *state != GameState::PlayerTurn {
+        for (entity, _, initial_highlight) in &query {
+            let entity = commands.entity(entity);
+            remove_highlight_components(entity, initial_highlight);
+        }
+    } else {
+        for (entity, transform, initial_highlight) in &query {
+            let mut entity = commands.entity(entity);
+            let Vec3 { x, z, .. } = transform.translation;
+            let coord = game_coord_to_reversi_coord((x, z));
+            if game.0.valid_moves().contains(&coord) {
+                entity.insert(PickHighlight);
+            } else {
+                remove_highlight_components(entity, initial_highlight);
+            }
+        }
+    }
+}
 
 pub fn click_grid_square<E>(_: &ListenerInput<E>, commands: &mut EntityCommands)
 where

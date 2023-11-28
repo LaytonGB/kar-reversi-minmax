@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_mod_picking::{
     events::{Click, Pointer},
+    highlight::PickHighlight,
     prelude::On,
 };
 use strum::IntoEnumIterator;
@@ -14,7 +15,7 @@ use crate::game::{
     },
 };
 
-use super::structs::BevyBotDifficulty;
+use super::{highlight_constants::GRID_HIGHLIGHT, structs::BevyBotDifficulty};
 
 pub fn menu_setup(mut commands: Commands) {
     // camera
@@ -163,6 +164,8 @@ pub fn board_setup(
                 },
                 BevySquare,
                 On::<Pointer<Click>>::target_commands_mut(click_grid_square),
+                PickHighlight,
+                GRID_HIGHLIGHT,
             ));
         }
     }
