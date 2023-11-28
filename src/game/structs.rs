@@ -73,6 +73,9 @@ pub struct BevyBotAlgorithm(pub BotAlgorithm);
 #[derive(Component, Debug)]
 pub struct BevyPlayButton;
 
+#[derive(Component, Default, Debug)]
+pub struct BevyMetricsDisplay;
+
 #[derive(Resource, Debug)]
 pub struct BevyReversi(pub Reversi);
 

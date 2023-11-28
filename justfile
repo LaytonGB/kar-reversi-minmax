@@ -3,7 +3,7 @@ set shell := ["powershell.exe", "-c"]
 
 # run standalone game in dev mode
 run-game:
-    cargo run --no-default-features -F game
+    cargo run --no-default-features -F game,bevy/dynamic_linking
 
 # package wasm into docs folder
 package-wasm:

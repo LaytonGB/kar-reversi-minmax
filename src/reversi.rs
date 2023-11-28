@@ -232,6 +232,10 @@ impl Reversi {
         self.bot_player.as_ref()
     }
 
+    pub fn bot_player_mut(&mut self) -> Option<&mut (Player, Bot)> {
+        self.bot_player.as_mut()
+    }
+
     pub fn current_player(&self) -> Player {
         self.current_player
     }

@@ -20,7 +20,7 @@ use crate::{
 
 use crate::player::Player;
 
-use super::structs::BevySquare;
+use super::structs::{BevyMetricsDisplay, BevySquare};
 
 pub fn update_grid_highlights(
     mut commands: Commands,
@@ -116,9 +116,9 @@ pub fn bot_make_move(
     if timer.0.just_finished() {
         if Reversi::can_move(game.0.board(), Player::Red) {
             let bot_move_coord = {
-                let game = game.0.clone();
-                let mut bot = game.bot_player().expect("bot").1.clone();
-                bot.get_move(game)
+                let game_copy = game.0.clone();
+                let bot = &mut game.0.bot_player_mut().unwrap().1;
+                bot.get_move(game_copy.clone())
             };
             game.0.place_piece_and_add_history(bot_move_coord);
         }
@@ -190,6 +190,31 @@ pub fn maintain_score_display(mut commands: Commands, query: Query<(Entity, &Bev
             ),
             ..Default::default()
         });
+    }
+}
+
+pub fn display_metrics(
+    mut commands: Commands,
+    game: Res<BevyReversi>,
+    mut query: Query<Entity, With<BevyMetricsDisplay>>,
+) {
+    let bot = &game.0.bot_player().as_ref().unwrap().1;
+    let (expansions, comparisons) = bot.get_metrics();
+    let metrics_text_id = commands
+        .spawn(TextBundle::from_section(
+            format!(
+                "Expansions: {}\nComparisons: {}\n\n",
+                expansions, comparisons
+            ),
+            TextStyle {
+                font: default(),
+                font_size: 20.0,
+                color: Color::WHITE,
+            },
+        ))
+        .id();
+    for entity in &mut query {
+        commands.entity(entity).push_children(&[metrics_text_id]);
     }
 }
 

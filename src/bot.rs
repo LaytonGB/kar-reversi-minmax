@@ -344,4 +344,8 @@ impl Bot {
             (-score, coord, (beta, alpha))
         }
     }
+
+    pub fn get_metrics(&self) -> (usize, usize) {
+        (self.expansions, self.comparisons)
+    }
 }

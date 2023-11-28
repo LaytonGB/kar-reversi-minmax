@@ -14,7 +14,7 @@ use crate::game::{
 };
 
 use super::{
-    interactions::{show_game_over, update_grid_highlights},
+    interactions::{display_metrics, show_game_over, update_grid_highlights},
     menu_interactions::{handle_algorithm_buttons, handle_play_button},
 };
 
@@ -69,6 +69,7 @@ pub fn run_game() {
                     .run_if(in_state(GameState::AiTurn)),
             ),
         )
+        .add_systems(OnExit(GameState::AiTurn), display_metrics)
         .add_systems(
             PostUpdate,
             (

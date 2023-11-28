@@ -17,7 +17,9 @@ use crate::game::{
 
 use super::{
     highlight_constants::{BUTTON_DEFAULT, DANGER_DEFAULT, GRID_HIGHLIGHT},
-    structs::{BevyBotAlgorithm, BevyBotDifficulty, BevyGameConfig, BevyPlayButton},
+    structs::{
+        BevyBotAlgorithm, BevyBotDifficulty, BevyGameConfig, BevyMetricsDisplay, BevyPlayButton,
+    },
 };
 
 pub fn menu_setup(mut commands: Commands) {
@@ -360,4 +362,30 @@ pub fn board_setup(
             ));
             parent_spawn_score_text(parent, Player::Red);
         });
+    // algorithm metrics
+    commands.spawn((
+        NodeBundle {
+            style: Style {
+                left: Val::Px(36.0),
+                height: Val::Percent(80.0),
+                width: Val::Percent(20.0),
+                padding: UiRect::all(Val::Px(12.0)),
+                margin: UiRect::vertical(Val::Percent(5.0)),
+                overflow: Overflow::clip(),
+                flex_direction: FlexDirection::Column,
+                justify_content: JustifyContent::FlexEnd,
+                align_items: AlignItems::FlexStart,
+                row_gap: Val::Px(16.0),
+                ..Default::default()
+            },
+            background_color: BackgroundColor(Color::Hsla {
+                hue: 0.0,
+                saturation: 0.0,
+                lightness: 0.0,
+                alpha: 0.3,
+            }),
+            ..Default::default()
+        },
+        BevyMetricsDisplay::default(),
+    ));
 }
