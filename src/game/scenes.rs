@@ -124,22 +124,28 @@ pub fn menu_setup(mut commands: Commands) {
                 });
 
             // algorithm
-            parent.spawn(TextBundle {
-                text: Text::from_section(
-                    "Algorithm",
-                    TextStyle {
-                        font: default(),
-                        font_size: 26.0,
-                        color: Color::Hsla {
-                            hue: 0.0,
-                            saturation: 0.0,
-                            lightness: 0.85,
-                            alpha: 1.0,
+            parent.spawn(
+                TextBundle {
+                    text: Text::from_section(
+                        "Algorithm",
+                        TextStyle {
+                            font: default(),
+                            font_size: 26.0,
+                            color: Color::Hsla {
+                                hue: 0.0,
+                                saturation: 0.0,
+                                lightness: 0.85,
+                                alpha: 1.0,
+                            },
                         },
-                    },
-                ),
-                ..Default::default()
-            });
+                    ),
+                    ..Default::default()
+                }
+                .with_style(Style {
+                    margin: UiRect::top(Val::Px(36.0)),
+                    ..Default::default()
+                }),
+            );
             parent
                 .spawn(NodeBundle {
                     style: Style {
