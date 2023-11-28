@@ -9,10 +9,14 @@ run-game:
 package-wasm:
     wasm-bindgen --out-dir ./docs/ --target web ./target/wasm32-unknown-unknown/release/kar_reversi_minmax.wasm
 
+# build standalone game
+build-game:
+    cargo build --release --no-default-features -F game
+
 # build all targets
 build-all:
     cargo build --release
-    cargo build --release --no-default-features -F game
+    just build-game
     cargo build --release --no-default-features -F game --target wasm32-unknown-unknown
 
 # build all targets and package wasm to docs folder
