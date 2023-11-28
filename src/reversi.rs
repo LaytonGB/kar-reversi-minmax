@@ -81,7 +81,7 @@ impl Reversi {
         use core::time;
         use std::thread;
 
-        while self.anyone_can_move() {
+        while Self::anyone_can_move(&self.board) {
             let current_player_is_bot = self
                 .bot_player
                 .as_ref()
@@ -95,11 +95,11 @@ impl Reversi {
                 let game = self.clone();
                 let (_, bot) = self.bot_player.as_mut().unwrap();
                 let coord = bot.get_move(game);
-                self.place_piece(coord);
-            } else if self.can_move(self.current_player) {
+                self.place_piece_and_add_history(coord);
+            } else if Self::can_move(&self.board, self.current_player) {
                 let coord =
                     self.get_valid_coordinate_input(Some(|| println!("ERROR: Invalid input")));
-                self.place_piece(coord);
+                self.place_piece_and_add_history(coord);
             }
 
             self.switch_players();
@@ -110,30 +110,29 @@ impl Reversi {
     }
 
     pub(crate) fn update_valid_moves(&mut self) {
-        self.valid_moves = self
-            .get_valid_moves_for_player(self.current_player)
-            .collect();
+        self.valid_moves =
+            Self::get_valid_moves_for_player(&self.board, self.current_player).collect();
     }
 
-    fn get_valid_moves_for_player(
-        &self,
+    pub(crate) fn get_valid_moves_for_player(
+        board: &Board,
         player: Player,
     ) -> impl Iterator<Item = (usize, usize)> + '_ {
-        let n = self.board.size();
+        let n = board.size();
         let in_bounds = |(a, b): (usize, usize)| a < n && b < n;
-        self.board
+        board
             .pieces_for_player(player)
             .fold(HashSet::new(), |mut s, start| {
                 for (i, j) in DIRECTIONS {
                     let increment = |(a, b): (usize, usize)| (a.wrapping_add(i), b.wrapping_add(j));
 
                     let mut coord = increment(start);
-                    if !in_bounds(coord) || self.board.get(coord).map_or(true, |p| p == player) {
+                    if !in_bounds(coord) || board.get(coord).map_or(true, |p| p == player) {
                         continue;
                     }
 
                     while in_bounds(coord) {
-                        let p = self.board.get(coord);
+                        let p = board.get(coord);
                         match p {
                             Some(p) if p == player => break,
                             Some(_) => coord = increment(coord),
@@ -149,12 +148,12 @@ impl Reversi {
             .into_iter()
     }
 
-    pub(crate) fn anyone_can_move(&self) -> bool {
-        self.can_move(Player::Green) || self.can_move(Player::Red)
+    pub(crate) fn anyone_can_move(board: &Board) -> bool {
+        Self::can_move(board, Player::Green) || Self::can_move(board, Player::Red)
     }
 
-    pub(crate) fn can_move(&self, player: Player) -> bool {
-        self.get_valid_moves_for_player(player).count() > 0
+    pub(crate) fn can_move(board: &Board, player: Player) -> bool {
+        Self::get_valid_moves_for_player(board, player).count() > 0
     }
 
     pub fn get_winner(&self) -> Option<Player> {
@@ -203,16 +202,26 @@ impl Reversi {
         }
     }
 
-    pub(crate) fn place_piece(&mut self, coord: (usize, usize)) {
-        self.board.set(coord, Some(self.current_player));
-
-        let captured_pieces = self.get_captures_for_position(coord).to_vec();
-        for &c in captured_pieces.iter() {
-            self.board.switch_piece(c);
-        }
-
+    pub(crate) fn place_piece_and_add_history(&mut self, coord: (usize, usize)) {
+        let captured_pieces =
+            Self::place_piece_on_board(&mut self.board, coord, self.current_player);
         self.history
             .push(self.current_player, coord, captured_pieces);
+    }
+
+    pub(crate) fn place_piece_on_board(
+        board: &mut Board,
+        coord: (usize, usize),
+        player: Player,
+    ) -> Vec<(usize, usize)> {
+        board.set(coord, Some(player));
+
+        let captured_pieces = Self::get_captures_for_position(board, coord).to_vec();
+        for &c in captured_pieces.iter() {
+            board.switch_piece(c);
+        }
+
+        captured_pieces
     }
 
     pub(crate) fn switch_players(&mut self) {
@@ -244,9 +253,14 @@ impl Reversi {
         &self.board
     }
 
-    fn get_captures_for_position(&self, coord: (usize, usize)) -> Vec<(usize, usize)> {
-        let player = self.current_player;
-        let n = self.board.size();
+    fn get_captures_for_position(board: &Board, coord: (usize, usize)) -> Vec<(usize, usize)> {
+        let player = board.get(coord);
+        if player.is_none() {
+            return vec![];
+        }
+
+        let player = player.unwrap();
+        let n = board.size();
         let in_bounds = |(a, b): (usize, usize)| a < n && b < n;
         let mut res = Vec::new();
 
@@ -255,7 +269,7 @@ impl Reversi {
             let mut coord = increment(coord);
             let mut v = Vec::new();
             while in_bounds(coord) {
-                let p = self.board.get(coord);
+                let p = board.get(coord);
                 match p {
                     Some(p) if p == player => {
                         res.append(&mut v);
@@ -294,6 +308,9 @@ mod tests {
     fn test_get_captures_for_position() {
         let game = Reversi::new(None);
 
-        assert_eq!(game.get_captures_for_position((4, 2)), vec![(4, 3)]);
+        assert_eq!(
+            Reversi::get_captures_for_position(game.board(), (4, 2)),
+            vec![(4, 3)]
+        );
     }
 }

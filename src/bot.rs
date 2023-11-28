@@ -1,4 +1,8 @@
-use crate::{bot_algorithm::BotAlgorithm, reversi::Reversi};
+use async_recursion::async_recursion;
+use futures::{executor::block_on, future::join_all};
+use std::sync::{Arc, RwLock};
+
+use crate::{board::Board, bot_algorithm::BotAlgorithm, player::Player, reversi::Reversi};
 
 #[derive(Clone, Debug)]
 pub struct Bot {
@@ -35,6 +39,7 @@ impl Bot {
             BotAlgorithm::MinMax => self.get_move_minmax(game),
             BotAlgorithm::AlphaBeta => self.get_move_alphabeta(game),
             BotAlgorithm::NegaMax => self.get_move_negamax(game),
+            BotAlgorithm::Async => self.get_move_async(game),
         }
     }
 
@@ -48,9 +53,13 @@ impl Bot {
     }
 
     fn eval(game: &Reversi) -> i64 {
-        let bot_player = game.bot_player().unwrap().0;
-        game.board().pieces_for_player(bot_player).count() as i64
-            - game.board().pieces_for_player(bot_player.other()).count() as i64
+        game.board()
+            .pieces_for_player(game.current_player())
+            .count() as i64
+            - game
+                .board()
+                .pieces_for_player(game.current_player().other())
+                .count() as i64
     }
 
     fn get_move_minmax(&mut self, mut game: Reversi) -> (usize, usize) {
@@ -65,13 +74,29 @@ impl Bot {
         self.negamax(&mut game, 0, i64::MIN, i64::MAX).1.unwrap()
     }
 
+    fn get_move_async(&mut self, game: Reversi) -> (usize, usize) {
+        let self_arc = Arc::new(RwLock::new(self.clone()));
+        let res = block_on(Self::async_with_heuristic(
+            self_arc.clone(),
+            game.board().clone(),
+            game.current_player(),
+            game.bot_player().unwrap().0,
+            self.max_depth,
+            0,
+            i64::MIN,
+            i64::MAX,
+        ));
+        *self = self_arc.read().unwrap().clone();
+        res.1.unwrap()
+    }
+
     fn minmax(&mut self, game: &mut Reversi, depth: usize) -> (i64, Option<(usize, usize)>) {
-        if !game.anyone_can_move() || self.max_depth.is_some_and(|md| depth >= md) {
+        if !Reversi::anyone_can_move(game.board()) || self.max_depth.is_some_and(|md| depth >= md) {
             return (Self::eval(game), None);
         }
 
         self.expansions += 1;
-        if !game.can_move(game.current_player()) {
+        if !Reversi::can_move(game.board(), game.current_player()) {
             game.switch_players();
             game.update_valid_moves();
             let res = self.minmax(game, depth + 1);
@@ -93,7 +118,7 @@ impl Bot {
                 };
             let mut coord = None;
             for m in game.valid_moves().to_vec() {
-                game.place_piece(m);
+                game.place_piece_and_add_history(m);
                 game.switch_players();
                 game.update_valid_moves();
                 let (new_score, _) = self.minmax(game, depth + 1);
@@ -117,12 +142,12 @@ impl Bot {
         mut alpha: i64,
         mut beta: i64,
     ) -> (i64, Option<(usize, usize)>, (i64, i64)) {
-        if !game.anyone_can_move() || self.max_depth.is_some_and(|md| depth >= md) {
+        if !Reversi::anyone_can_move(game.board()) || self.max_depth.is_some_and(|md| depth >= md) {
             return (Self::eval(game), None, (alpha, beta));
         }
 
         self.expansions += 1;
-        if !game.can_move(game.current_player()) {
+        if !Reversi::can_move(game.board(), game.current_player()) {
             game.switch_players();
             game.update_valid_moves();
             let res = self.alphabeta(game, depth + 1, alpha, beta);
@@ -149,7 +174,7 @@ impl Bot {
             };
             let mut coord = None;
             for m in game.valid_moves().to_vec() {
-                game.place_piece(m);
+                game.place_piece_and_add_history(m);
                 game.switch_players();
                 game.update_valid_moves();
                 let (new_score, _, (new_alpha, new_beta)) =
@@ -178,15 +203,15 @@ impl Bot {
         mut alpha: i64,
         mut beta: i64,
     ) -> (i64, Option<(usize, usize)>, (i64, i64)) {
-        if !game.anyone_can_move() || self.max_depth.is_some_and(|md| depth >= md) {
+        if !Reversi::anyone_can_move(game.board()) || self.max_depth.is_some_and(|md| depth >= md) {
             return (Self::eval(game), None, (alpha, beta));
         }
 
         self.expansions += 1;
-        if !game.can_move(game.current_player()) {
+        if !Reversi::can_move(game.board(), game.current_player()) {
             game.switch_players();
             game.update_valid_moves();
-            let res = self.alphabeta(game, depth + 1, alpha, beta);
+            let res = self.negamax(game, depth + 1, alpha, beta);
             game.switch_players();
             game.update_valid_moves();
             return res;
@@ -194,11 +219,11 @@ impl Bot {
             let mut score = i64::MIN;
             let mut coord = None;
             for m in game.valid_moves().to_vec() {
-                game.place_piece(m);
+                game.place_piece_and_add_history(m);
                 game.switch_players();
                 game.update_valid_moves();
                 let (new_score, _, (new_alpha, new_beta)) =
-                    self.alphabeta(game, depth + 1, alpha, beta);
+                    self.negamax(game, depth + 1, alpha, beta);
                 (alpha, beta) = (alpha.max(new_alpha), beta.min(new_beta));
                 game.undo_turn();
                 game.update_valid_moves();
@@ -212,6 +237,110 @@ impl Bot {
                     break;
                 }
             }
+            (-score, coord, (beta, alpha))
+        }
+    }
+
+    fn heuristic_eval_coord(board: &Board, coord: (usize, usize)) -> i64 {
+        match (
+            coord.0 == 0 || coord.0 == board.size() - 1,
+            coord.1 == 0 || coord.1 == board.size() - 1,
+        ) {
+            (true, true) => 9,
+            (true, false) => 3,
+            (false, true) => 3,
+            (false, false) => 1,
+        }
+    }
+
+    fn heuristic_eval(board: &Board, bot_player: Player) -> i64 {
+        board
+            .pieces_for_player(bot_player)
+            .map(|coord| Self::heuristic_eval_coord(board, coord))
+            .sum::<i64>()
+            - board
+                .pieces_for_player(bot_player.other())
+                .map(|coord| Self::heuristic_eval_coord(board, coord))
+                .sum::<i64>()
+    }
+
+    #[async_recursion]
+    async fn async_with_heuristic(
+        bot: Arc<RwLock<Bot>>,
+        board: Board,
+        current_player: Player,
+        bot_player: Player,
+        max_depth: Option<usize>,
+        depth: usize,
+        mut alpha: i64,
+        mut beta: i64,
+    ) -> (i64, Option<(usize, usize)>, (i64, i64)) {
+        if !Reversi::anyone_can_move(&board) || max_depth.is_some_and(|md| depth >= md) {
+            return (
+                Self::heuristic_eval(&board, bot_player),
+                None,
+                (alpha, beta),
+            );
+        }
+
+        {
+            let mut bot = bot.write().unwrap();
+            bot.expansions += 1;
+            if bot.expansions % 10000 == 0 {
+                println!("{}", bot.expansions);
+            }
+        }
+        if !Reversi::can_move(&board, current_player) {
+            Self::async_with_heuristic(
+                bot,
+                board,
+                current_player.other(),
+                bot_player,
+                max_depth,
+                depth + 1,
+                beta,
+                alpha,
+            )
+            .await
+        } else {
+            let mut score = i64::MIN;
+            let mut coord = None;
+            let valid_moves: Vec<_> =
+                Reversi::get_valid_moves_for_player(&board, current_player).collect();
+            let mut futures = Vec::new();
+            for &m in &valid_moves {
+                let mut new_board = board.clone();
+                Reversi::place_piece_on_board(&mut new_board, m, current_player);
+                futures.push(Self::async_with_heuristic(
+                    bot.clone(),
+                    new_board,
+                    current_player.other(),
+                    bot_player,
+                    max_depth,
+                    depth + 1,
+                    beta,
+                    alpha,
+                ));
+            }
+
+            let results = valid_moves
+                .into_iter()
+                .zip(join_all(futures.into_iter()).await.into_iter());
+            for (m, (new_score, _, (new_alpha, new_beta))) in results {
+                {
+                    let mut bot = bot.write().unwrap();
+                    bot.comparisons += 1;
+                }
+                (alpha, beta) = (alpha.max(new_alpha), beta.min(new_beta));
+                if new_score > score {
+                    score = new_score;
+                    coord = Some(m);
+                }
+                if alpha > beta {
+                    break;
+                }
+            }
+
             (-score, coord, (beta, alpha))
         }
     }

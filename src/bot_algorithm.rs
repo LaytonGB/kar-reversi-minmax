@@ -5,4 +5,5 @@ pub enum BotAlgorithm {
     MinMax,
     AlphaBeta,
     NegaMax,
+    Async,
 }
