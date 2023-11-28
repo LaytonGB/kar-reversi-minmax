@@ -3,6 +3,7 @@ use if_chain::if_chain;
 
 use crate::{
     bot_algorithm::BotAlgorithm,
+    bot_difficulty::BotDifficulty,
     game::{
         highlight_constants::{BUTTON_DEFAULT, BUTTON_HOVERED},
         states::GameState,
@@ -24,10 +25,23 @@ pub fn handle_difficulty_buttons(
         if config.config.difficulty.is_some_and(|d| d == difficulty.0) {
             *background_color = BackgroundColor(BUTTON_SELECTED);
         } else {
+            let is_insane = difficulty.0 == BotDifficulty::Insane;
             match interaction {
                 Interaction::Pressed => config.config.difficulty = Some(difficulty.0),
-                Interaction::Hovered => *background_color = BackgroundColor(BUTTON_HOVERED),
-                Interaction::None => *background_color = BackgroundColor(BUTTON_DEFAULT),
+                Interaction::Hovered => {
+                    *background_color = BackgroundColor(if is_insane {
+                        DANGER_HOVERED
+                    } else {
+                        BUTTON_HOVERED
+                    })
+                }
+                Interaction::None => {
+                    *background_color = BackgroundColor(if is_insane {
+                        DANGER_DEFAULT
+                    } else {
+                        BUTTON_DEFAULT
+                    })
+                }
             }
         }
     }

@@ -90,11 +90,18 @@ pub fn menu_setup(mut commands: Commands) {
                     ..Default::default()
                 })
                 .with_children(|parent| {
-                    for difficulty in BotDifficulty::iter() {
+                    let mut it = BotDifficulty::iter();
+                    let mut next = it.next();
+                    while let Some(difficulty) = next {
+                        next = it.next();
                         parent
                             .spawn((
                                 ButtonBundle {
-                                    background_color: BackgroundColor(Color::BLACK),
+                                    background_color: if next.is_some() {
+                                        BackgroundColor(BUTTON_DEFAULT)
+                                    } else {
+                                        BackgroundColor(DANGER_DEFAULT)
+                                    },
                                     style: Style {
                                         padding: UiRect::all(Val::Px(6.0)),
                                         margin: UiRect::all(Val::Px(6.0)),
