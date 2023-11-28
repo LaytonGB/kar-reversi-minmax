@@ -12,7 +12,7 @@ use crate::{
 };
 
 use super::{
-    highlight_constants::BUTTON_SELECTED,
+    highlight_constants::{BUTTON_SELECTED, DANGER_DEFAULT, DANGER_HOVERED},
     structs::{BevyBotAlgorithm, BevyBotDifficulty, BevyMenuContent, BevyPlayButton, BevyReversi},
 };
 
@@ -41,10 +41,23 @@ pub fn handle_algorithm_buttons(
         if config.config.algorithm.is_some_and(|a| a == algorithm.0) {
             *background_color = BackgroundColor(BUTTON_SELECTED);
         } else {
+            let is_async = algorithm.0 == BotAlgorithm::Async;
             match interaction {
                 Interaction::Pressed => config.config.algorithm = Some(algorithm.0),
-                Interaction::Hovered => *background_color = BackgroundColor(BUTTON_HOVERED),
-                Interaction::None => *background_color = BackgroundColor(BUTTON_DEFAULT),
+                Interaction::Hovered => {
+                    *background_color = BackgroundColor(if is_async {
+                        DANGER_HOVERED
+                    } else {
+                        BUTTON_HOVERED
+                    })
+                }
+                Interaction::None => {
+                    *background_color = BackgroundColor(if is_async {
+                        DANGER_DEFAULT
+                    } else {
+                        BUTTON_DEFAULT
+                    })
+                }
             }
         }
     }

@@ -16,7 +16,7 @@ use crate::game::{
 };
 
 use super::{
-    highlight_constants::GRID_HIGHLIGHT,
+    highlight_constants::{BUTTON_DEFAULT, DANGER_DEFAULT, GRID_HIGHLIGHT},
     structs::{BevyBotAlgorithm, BevyBotDifficulty, BevyGameConfig, BevyPlayButton},
 };
 
@@ -155,11 +155,18 @@ pub fn menu_setup(mut commands: Commands) {
                     ..Default::default()
                 })
                 .with_children(|parent| {
-                    for algorithm in BotAlgorithm::iter() {
+                    let mut it = BotAlgorithm::iter();
+                    let mut next = it.next();
+                    while let Some(algorithm) = next {
+                        next = it.next();
                         parent
                             .spawn((
                                 ButtonBundle {
-                                    background_color: BackgroundColor(Color::BLACK),
+                                    background_color: if next.is_some() {
+                                        BackgroundColor(BUTTON_DEFAULT)
+                                    } else {
+                                        BackgroundColor(DANGER_DEFAULT)
+                                    },
                                     style: Style {
                                         padding: UiRect::all(Val::Px(6.0)),
                                         margin: UiRect::all(Val::Px(6.0)),

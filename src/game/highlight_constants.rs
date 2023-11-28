@@ -22,3 +22,16 @@ pub const BUTTON_SELECTED: Color = Color::Hsla {
     lightness: 0.15,
     alpha: 1.0,
 };
+
+pub const DANGER_DEFAULT: Color = Color::Hsla {
+    hue: 0.0,
+    saturation: 1.0,
+    lightness: 0.15,
+    alpha: 1.0,
+};
+pub const DANGER_HOVERED: Color = Color::Hsla {
+    hue: 0.0,
+    saturation: 1.0,
+    lightness: 0.25,
+    alpha: 1.0,
+};
