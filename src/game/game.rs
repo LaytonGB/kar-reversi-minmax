@@ -84,11 +84,6 @@ pub fn run_game() {
         )
         .add_systems(OnEnter(GameState::AiTurn), bot_delay_reset)
         .add_systems(Update, bot_make_move.run_if(in_state(GameState::AiTurn)))
-        // .add_systems(
-        //     Update,
-        //     highlight_valid_grid_squares.run_if(resource_changed::<BevyReversi>()),
-        // )
-        // end of game
         .add_systems(OnEnter(GameState::End), show_game_over)
         .run();
 }
