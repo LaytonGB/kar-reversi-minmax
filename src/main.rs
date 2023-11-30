@@ -1,5 +1,3 @@
-use kar_reversi_minmax::bot_heuristic::BotHeuristic;
-
 fn main() {
     #[cfg(all(feature = "terminal", feature = "game"))]
     compile_error!("cannot enable both terminal and game");
@@ -7,8 +5,8 @@ fn main() {
     #[cfg(feature = "terminal")]
     {
         use kar_reversi_minmax::{
-            bot_algorithm::BotAlgorithm, bot_difficulty::BotDifficulty, player::Player,
-            reversi::Reversi, utils::clear_terminal,
+            bot_algorithm::BotAlgorithm, bot_difficulty::BotDifficulty,
+            bot_heuristic::BotHeuristic, player::Player, reversi::Reversi, utils::clear_terminal,
         };
         use strum::IntoEnumIterator;
         use text_io::try_read;

@@ -5,8 +5,11 @@ use crate::{
     player::Player, reversi::Reversi,
 };
 
+use super::game_mode::GameMode;
+
 #[derive(Default, Debug)]
 pub struct BevyGameConfig {
+    pub gamemode: Option<GameMode>,
     pub difficulty: Option<BotDifficulty>,
     pub algorithm: Option<BotAlgorithm>,
     pub heuristic: Option<BotHeuristic>,
@@ -65,6 +68,9 @@ impl Default for BevyAiDelay {
         Self(Timer::from_seconds(1.5, TimerMode::Once))
     }
 }
+
+#[derive(Component, Debug)]
+pub struct BevyGameMode(pub GameMode);
 
 #[derive(Component, Debug)]
 pub struct BevyBotDifficulty(pub BotDifficulty);

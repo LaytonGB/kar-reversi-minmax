@@ -19,10 +19,11 @@ use crate::game::{
 };
 
 use super::{
+    game_mode::GameMode,
     highlight_constants::{BUTTON_DEFAULT, DANGER_DEFAULT, GRID_HIGHLIGHT},
     structs::{
-        BevyBotAlgorithm, BevyBotDifficulty, BevyBotHeuristic, BevyGameConfig, BevyMetricsDisplay,
-        BevyPlayButton,
+        BevyBotAlgorithm, BevyBotDifficulty, BevyBotHeuristic, BevyGameConfig, BevyGameMode,
+        BevyMetricsDisplay, BevyPlayButton,
     },
 };
 
@@ -42,6 +43,7 @@ pub fn menu_setup(mut commands: Commands) {
                 justify_content: JustifyContent::Center,
                 align_items: AlignItems::Center,
                 flex_direction: FlexDirection::Column,
+                row_gap: Val::Px(30.0),
                 ..default()
             },
             ..default()
@@ -49,12 +51,7 @@ pub fn menu_setup(mut commands: Commands) {
         .with_children(|parent| {
             parent.spawn(TextBundle {
                 style: Style {
-                    padding: UiRect {
-                        left: Val::ZERO,
-                        right: Val::ZERO,
-                        top: Val::ZERO,
-                        bottom: Val::Px(150.0),
-                    },
+                    padding: UiRect::all(Val::Px(40.0)),
                     ..Default::default()
                 },
                 text: Text::from_section(
@@ -68,213 +65,318 @@ pub fn menu_setup(mut commands: Commands) {
                 ..Default::default()
             });
 
-            // difficulty
-            parent.spawn(TextBundle {
-                text: Text::from_section(
-                    "Difficulty",
-                    TextStyle {
-                        font: default(),
-                        font_size: 26.0,
-                        color: Color::Hsla {
-                            hue: 0.0,
-                            saturation: 0.0,
-                            lightness: 0.85,
-                            alpha: 1.0,
-                        },
-                    },
-                ),
-                ..Default::default()
-            });
+            // gamemode
             parent
                 .spawn(NodeBundle {
                     style: Style {
-                        flex_direction: FlexDirection::Row,
+                        display: Display::Flex,
+                        flex_direction: FlexDirection::Column,
+                        justify_content: JustifyContent::Center,
+                        align_items: AlignItems::Center,
+                        row_gap: Val::Px(8.0),
                         ..Default::default()
                     },
                     ..Default::default()
                 })
                 .with_children(|parent| {
-                    let mut it = BotDifficulty::iter();
-                    let mut next = it.next();
-                    while let Some(difficulty) = next {
-                        next = it.next();
-                        parent
-                            .spawn((
-                                ButtonBundle {
-                                    background_color: if next.is_some() {
-                                        BackgroundColor(BUTTON_DEFAULT)
-                                    } else {
-                                        BackgroundColor(DANGER_DEFAULT)
-                                    },
-                                    style: Style {
-                                        padding: UiRect::all(Val::Px(6.0)),
-                                        margin: UiRect::all(Val::Px(6.0)),
-                                        ..Default::default()
-                                    },
-                                    ..Default::default()
+                    parent.spawn(TextBundle {
+                        text: Text::from_section(
+                            "Mode",
+                            TextStyle {
+                                font: default(),
+                                font_size: 26.0,
+                                color: Color::Hsla {
+                                    hue: 0.0,
+                                    saturation: 0.0,
+                                    lightness: 0.85,
+                                    alpha: 1.0,
                                 },
-                                BevyBotDifficulty(difficulty),
-                            ))
-                            .with_children(|btn| {
-                                btn.spawn(TextBundle {
-                                    text: Text::from_section(
-                                        difficulty.to_string(),
-                                        TextStyle {
-                                            font: default(),
-                                            font_size: 16.0,
-                                            color: Color::Hsla {
-                                                hue: 0.0,
-                                                saturation: 0.0,
-                                                lightness: 0.7,
-                                                alpha: 1.0,
+                            },
+                        ),
+                        ..Default::default()
+                    });
+                    parent
+                        .spawn(NodeBundle {
+                            style: Style {
+                                flex_direction: FlexDirection::Row,
+                                ..Default::default()
+                            },
+                            ..Default::default()
+                        })
+                        .with_children(|parent| {
+                            for gamemode in GameMode::iter() {
+                                parent
+                                    .spawn((
+                                        ButtonBundle {
+                                            background_color: BackgroundColor(BUTTON_DEFAULT),
+                                            style: Style {
+                                                padding: UiRect::all(Val::Px(6.0)),
+                                                margin: UiRect::all(Val::Px(6.0)),
+                                                ..Default::default()
                                             },
+                                            ..Default::default()
                                         },
-                                    ),
-                                    ..Default::default()
-                                });
-                            });
-                    }
+                                        BevyGameMode(gamemode),
+                                    ))
+                                    .with_children(|btn| {
+                                        btn.spawn(TextBundle {
+                                            text: Text::from_section(
+                                                gamemode.to_string(),
+                                                TextStyle {
+                                                    font: default(),
+                                                    font_size: 16.0,
+                                                    color: Color::Hsla {
+                                                        hue: 0.0,
+                                                        saturation: 0.0,
+                                                        lightness: 0.7,
+                                                        alpha: 1.0,
+                                                    },
+                                                },
+                                            ),
+                                            ..Default::default()
+                                        });
+                                    });
+                            }
+                        });
+                });
+
+            // difficulty
+            parent
+                .spawn(NodeBundle {
+                    style: Style {
+                        display: Display::Flex,
+                        flex_direction: FlexDirection::Column,
+                        justify_content: JustifyContent::Center,
+                        align_items: AlignItems::Center,
+                        row_gap: Val::Px(8.0),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                })
+                .with_children(|parent| {
+                    parent.spawn(TextBundle {
+                        text: Text::from_section(
+                            "Difficulty",
+                            TextStyle {
+                                font: default(),
+                                font_size: 26.0,
+                                color: Color::Hsla {
+                                    hue: 0.0,
+                                    saturation: 0.0,
+                                    lightness: 0.85,
+                                    alpha: 1.0,
+                                },
+                            },
+                        ),
+                        ..Default::default()
+                    });
+                    parent
+                        .spawn(NodeBundle {
+                            style: Style {
+                                flex_direction: FlexDirection::Row,
+                                ..Default::default()
+                            },
+                            ..Default::default()
+                        })
+                        .with_children(|parent| {
+                            let mut it = BotDifficulty::iter();
+                            let mut next = it.next();
+                            while let Some(difficulty) = next {
+                                next = it.next();
+                                parent
+                                    .spawn((
+                                        ButtonBundle {
+                                            background_color: if next.is_some() {
+                                                BackgroundColor(BUTTON_DEFAULT)
+                                            } else {
+                                                BackgroundColor(DANGER_DEFAULT)
+                                            },
+                                            style: Style {
+                                                padding: UiRect::all(Val::Px(6.0)),
+                                                margin: UiRect::all(Val::Px(6.0)),
+                                                ..Default::default()
+                                            },
+                                            ..Default::default()
+                                        },
+                                        BevyBotDifficulty(difficulty),
+                                    ))
+                                    .with_children(|btn| {
+                                        btn.spawn(TextBundle {
+                                            text: Text::from_section(
+                                                difficulty.to_string(),
+                                                TextStyle {
+                                                    font: default(),
+                                                    font_size: 16.0,
+                                                    color: Color::Hsla {
+                                                        hue: 0.0,
+                                                        saturation: 0.0,
+                                                        lightness: 0.7,
+                                                        alpha: 1.0,
+                                                    },
+                                                },
+                                            ),
+                                            ..Default::default()
+                                        });
+                                    });
+                            }
+                        });
                 });
 
             // algorithm
-            parent.spawn(
-                TextBundle {
-                    text: Text::from_section(
-                        "Algorithm",
-                        TextStyle {
-                            font: default(),
-                            font_size: 26.0,
-                            color: Color::Hsla {
-                                hue: 0.0,
-                                saturation: 0.0,
-                                lightness: 0.85,
-                                alpha: 1.0,
-                            },
-                        },
-                    ),
-                    ..Default::default()
-                }
-                .with_style(Style {
-                    margin: UiRect::top(Val::Px(36.0)),
-                    ..Default::default()
-                }),
-            );
             parent
                 .spawn(NodeBundle {
                     style: Style {
-                        flex_direction: FlexDirection::Row,
+                        display: Display::Flex,
+                        flex_direction: FlexDirection::Column,
+                        justify_content: JustifyContent::Center,
+                        align_items: AlignItems::Center,
+                        row_gap: Val::Px(8.0),
                         ..Default::default()
                     },
                     ..Default::default()
                 })
                 .with_children(|parent| {
-                    let mut it = BotAlgorithm::iter();
-                    let mut next = it.next();
-                    while let Some(algorithm) = next {
-                        next = it.next();
-                        parent
-                            .spawn((
-                                ButtonBundle {
-                                    background_color: if next.is_some() {
-                                        BackgroundColor(BUTTON_DEFAULT)
-                                    } else {
-                                        BackgroundColor(DANGER_DEFAULT)
-                                    },
-                                    style: Style {
-                                        padding: UiRect::all(Val::Px(6.0)),
-                                        margin: UiRect::all(Val::Px(6.0)),
-                                        ..Default::default()
-                                    },
-                                    ..Default::default()
+                    parent.spawn(TextBundle {
+                        text: Text::from_section(
+                            "Algorithm",
+                            TextStyle {
+                                font: default(),
+                                font_size: 26.0,
+                                color: Color::Hsla {
+                                    hue: 0.0,
+                                    saturation: 0.0,
+                                    lightness: 0.85,
+                                    alpha: 1.0,
                                 },
-                                BevyBotAlgorithm(algorithm),
-                            ))
-                            .with_children(|btn| {
-                                btn.spawn(TextBundle {
-                                    text: Text::from_section(
-                                        algorithm.to_string(),
-                                        TextStyle {
-                                            font: default(),
-                                            font_size: 16.0,
-                                            color: Color::Hsla {
-                                                hue: 0.0,
-                                                saturation: 0.0,
-                                                lightness: 0.7,
-                                                alpha: 1.0,
+                            },
+                        ),
+                        ..Default::default()
+                    });
+                    parent
+                        .spawn(NodeBundle {
+                            style: Style {
+                                flex_direction: FlexDirection::Row,
+                                ..Default::default()
+                            },
+                            ..Default::default()
+                        })
+                        .with_children(|parent| {
+                            let mut it = BotAlgorithm::iter();
+                            let mut next = it.next();
+                            while let Some(algorithm) = next {
+                                next = it.next();
+                                parent
+                                    .spawn((
+                                        ButtonBundle {
+                                            background_color: if next.is_some() {
+                                                BackgroundColor(BUTTON_DEFAULT)
+                                            } else {
+                                                BackgroundColor(DANGER_DEFAULT)
                                             },
+                                            style: Style {
+                                                padding: UiRect::all(Val::Px(6.0)),
+                                                margin: UiRect::all(Val::Px(6.0)),
+                                                ..Default::default()
+                                            },
+                                            ..Default::default()
                                         },
-                                    ),
-                                    ..Default::default()
-                                });
-                            });
-                    }
+                                        BevyBotAlgorithm(algorithm),
+                                    ))
+                                    .with_children(|btn| {
+                                        btn.spawn(TextBundle {
+                                            text: Text::from_section(
+                                                algorithm.to_string(),
+                                                TextStyle {
+                                                    font: default(),
+                                                    font_size: 16.0,
+                                                    color: Color::Hsla {
+                                                        hue: 0.0,
+                                                        saturation: 0.0,
+                                                        lightness: 0.7,
+                                                        alpha: 1.0,
+                                                    },
+                                                },
+                                            ),
+                                            ..Default::default()
+                                        });
+                                    });
+                            }
+                        });
                 });
 
             // heuristic
-            parent.spawn(
-                TextBundle {
-                    text: Text::from_section(
-                        "Heuristic",
-                        TextStyle {
-                            font: default(),
-                            font_size: 26.0,
-                            color: Color::Hsla {
-                                hue: 0.0,
-                                saturation: 0.0,
-                                lightness: 0.85,
-                                alpha: 1.0,
-                            },
-                        },
-                    ),
-                    ..Default::default()
-                }
-                .with_style(Style {
-                    margin: UiRect::top(Val::Px(36.0)),
-                    ..Default::default()
-                }),
-            );
             parent
                 .spawn(NodeBundle {
                     style: Style {
-                        flex_direction: FlexDirection::Row,
+                        display: Display::Flex,
+                        flex_direction: FlexDirection::Column,
+                        justify_content: JustifyContent::Center,
+                        align_items: AlignItems::Center,
+                        row_gap: Val::Px(8.0),
                         ..Default::default()
                     },
                     ..Default::default()
                 })
                 .with_children(|parent| {
-                    for heuristic in BotHeuristic::iter() {
-                        parent
-                            .spawn((
-                                ButtonBundle {
-                                    background_color: BackgroundColor(BUTTON_DEFAULT),
-                                    style: Style {
-                                        padding: UiRect::all(Val::Px(6.0)),
-                                        margin: UiRect::all(Val::Px(6.0)),
-                                        ..Default::default()
-                                    },
-                                    ..Default::default()
+                    parent.spawn(TextBundle {
+                        text: Text::from_section(
+                            "Heuristic",
+                            TextStyle {
+                                font: default(),
+                                font_size: 26.0,
+                                color: Color::Hsla {
+                                    hue: 0.0,
+                                    saturation: 0.0,
+                                    lightness: 0.85,
+                                    alpha: 1.0,
                                 },
-                                BevyBotHeuristic(heuristic),
-                            ))
-                            .with_children(|btn| {
-                                btn.spawn(TextBundle {
-                                    text: Text::from_section(
-                                        heuristic.to_string(),
-                                        TextStyle {
-                                            font: default(),
-                                            font_size: 16.0,
-                                            color: Color::Hsla {
-                                                hue: 0.0,
-                                                saturation: 0.0,
-                                                lightness: 0.7,
-                                                alpha: 1.0,
+                            },
+                        ),
+                        ..Default::default()
+                    });
+                    parent
+                        .spawn(NodeBundle {
+                            style: Style {
+                                flex_direction: FlexDirection::Row,
+                                ..Default::default()
+                            },
+                            ..Default::default()
+                        })
+                        .with_children(|parent| {
+                            for heuristic in BotHeuristic::iter() {
+                                parent
+                                    .spawn((
+                                        ButtonBundle {
+                                            background_color: BackgroundColor(BUTTON_DEFAULT),
+                                            style: Style {
+                                                padding: UiRect::all(Val::Px(6.0)),
+                                                margin: UiRect::all(Val::Px(6.0)),
+                                                ..Default::default()
                                             },
+                                            ..Default::default()
                                         },
-                                    ),
-                                    ..Default::default()
-                                });
-                            });
-                    }
+                                        BevyBotHeuristic(heuristic),
+                                    ))
+                                    .with_children(|btn| {
+                                        btn.spawn(TextBundle {
+                                            text: Text::from_section(
+                                                heuristic.to_string(),
+                                                TextStyle {
+                                                    font: default(),
+                                                    font_size: 16.0,
+                                                    color: Color::Hsla {
+                                                        hue: 0.0,
+                                                        saturation: 0.0,
+                                                        lightness: 0.7,
+                                                        alpha: 1.0,
+                                                    },
+                                                },
+                                            ),
+                                            ..Default::default()
+                                        });
+                                    });
+                            }
+                        });
                 });
 
             // confirm button

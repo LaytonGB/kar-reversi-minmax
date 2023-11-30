@@ -1,5 +1,6 @@
 pub mod game;
 
+pub(crate) mod game_mode;
 pub(crate) mod highlight_constants;
 pub(crate) mod interactions;
 pub(crate) mod menu_interactions;

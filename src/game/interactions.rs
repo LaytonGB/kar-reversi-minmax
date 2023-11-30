@@ -78,13 +78,15 @@ where
         let transform = world_entity.get::<Transform>().cloned();
         let mut game = world_entity.world_mut().resource_mut::<BevyReversi>();
         // TODO replace with GameState check ?
-        if game.0.current_player() == Player::Green {
+        if game.0.current_player() == Player::Green || game.0.bot_player().is_none() {
             if let Some(transform) = transform {
                 let Vec3 { x, z, .. } = transform.translation;
                 let coord = game_coord_to_reversi_coord((x, z));
                 if game.0.valid_moves().contains(&coord) {
                     place_piece(&mut game, coord);
-                    world_entity.world_mut().run_system_once(into_ai_turn_state);
+                    if game.0.bot_player().is_some() {
+                        world_entity.world_mut().run_system_once(into_ai_turn_state);
+                    }
                 }
             }
         }
