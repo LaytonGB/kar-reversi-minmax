@@ -252,7 +252,7 @@ impl Bot {
     ) -> (i64, Option<(usize, usize)>, (i64, i64)) {
         if !Reversi::anyone_can_move(game.board()) || self.max_depth.is_some_and(|md| depth >= md) {
             return (
-                -Self::eval(self.heuristic, game.board(), game.current_player()),
+                Self::eval(self.heuristic, game.board(), game.current_player()),
                 None,
                 (alpha, beta),
             );
@@ -273,8 +273,9 @@ impl Bot {
                 game.place_piece_and_add_history(m);
                 game.switch_players();
                 game.update_valid_moves();
-                let (new_score, _, (new_alpha, new_beta)) =
+                let (mut new_score, _, (new_alpha, new_beta)) =
                     self.negamax(game, depth + 1, alpha, beta);
+                new_score *= -1;
                 (alpha, beta) = (alpha.max(new_alpha), beta.min(new_beta));
                 game.undo_turn();
                 game.update_valid_moves();
@@ -288,7 +289,7 @@ impl Bot {
                     break;
                 }
             }
-            (-score, coord, (beta, alpha))
+            (score, coord, (beta, alpha))
         }
     }
 
@@ -306,7 +307,7 @@ impl Bot {
     ) -> (i64, Option<(usize, usize)>, (i64, i64)) {
         if !Reversi::anyone_can_move(&board) || max_depth.is_some_and(|md| depth >= md) {
             return (
-                -Self::eval(heuristic, &board, current_player),
+                Self::eval(heuristic, &board, current_player),
                 None,
                 (alpha, beta),
             );
@@ -357,11 +358,12 @@ impl Bot {
             let results = valid_moves
                 .into_iter()
                 .zip(join_all(futures.into_iter()).await.into_iter());
-            for (m, (new_score, _, (new_alpha, new_beta))) in results {
+            for (m, (mut new_score, _, (new_alpha, new_beta))) in results {
                 {
                     let mut bot = bot.write().unwrap();
                     bot.comparisons += 1;
                 }
+                new_score *= -1;
                 (alpha, beta) = (alpha.max(new_alpha), beta.min(new_beta));
                 if new_score > score {
                     score = new_score;
@@ -372,7 +374,7 @@ impl Bot {
                 }
             }
 
-            (-score, coord, (beta, alpha))
+            (score, coord, (beta, alpha))
         }
     }
 

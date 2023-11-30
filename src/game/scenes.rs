@@ -6,7 +6,10 @@ use bevy_mod_picking::{
 };
 use strum::IntoEnumIterator;
 
-use crate::{bot_algorithm::BotAlgorithm, bot_difficulty::BotDifficulty, player::Player};
+use crate::{
+    bot_algorithm::BotAlgorithm, bot_difficulty::BotDifficulty, bot_heuristic::BotHeuristic,
+    player::Player,
+};
 
 use crate::game::{
     interactions::click_grid_square,
@@ -18,7 +21,8 @@ use crate::game::{
 use super::{
     highlight_constants::{BUTTON_DEFAULT, DANGER_DEFAULT, GRID_HIGHLIGHT},
     structs::{
-        BevyBotAlgorithm, BevyBotDifficulty, BevyGameConfig, BevyMetricsDisplay, BevyPlayButton,
+        BevyBotAlgorithm, BevyBotDifficulty, BevyBotHeuristic, BevyGameConfig, BevyMetricsDisplay,
+        BevyPlayButton,
     },
 };
 
@@ -189,6 +193,73 @@ pub fn menu_setup(mut commands: Commands) {
                                 btn.spawn(TextBundle {
                                     text: Text::from_section(
                                         algorithm.to_string(),
+                                        TextStyle {
+                                            font: default(),
+                                            font_size: 16.0,
+                                            color: Color::Hsla {
+                                                hue: 0.0,
+                                                saturation: 0.0,
+                                                lightness: 0.7,
+                                                alpha: 1.0,
+                                            },
+                                        },
+                                    ),
+                                    ..Default::default()
+                                });
+                            });
+                    }
+                });
+
+            // heuristic
+            parent.spawn(
+                TextBundle {
+                    text: Text::from_section(
+                        "Heuristic",
+                        TextStyle {
+                            font: default(),
+                            font_size: 26.0,
+                            color: Color::Hsla {
+                                hue: 0.0,
+                                saturation: 0.0,
+                                lightness: 0.85,
+                                alpha: 1.0,
+                            },
+                        },
+                    ),
+                    ..Default::default()
+                }
+                .with_style(Style {
+                    margin: UiRect::top(Val::Px(36.0)),
+                    ..Default::default()
+                }),
+            );
+            parent
+                .spawn(NodeBundle {
+                    style: Style {
+                        flex_direction: FlexDirection::Row,
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                })
+                .with_children(|parent| {
+                    for heuristic in BotHeuristic::iter() {
+                        parent
+                            .spawn((
+                                ButtonBundle {
+                                    background_color: BackgroundColor(BUTTON_DEFAULT),
+                                    style: Style {
+                                        padding: UiRect::all(Val::Px(6.0)),
+                                        margin: UiRect::all(Val::Px(6.0)),
+                                        ..Default::default()
+                                    },
+                                    ..Default::default()
+                                },
+                                BevyBotHeuristic(heuristic),
+                            ))
+                            .with_children(|btn| {
+                                btn.spawn(TextBundle {
+                                    text: Text::from_section(
+                                        heuristic.to_string(),
                                         TextStyle {
                                             font: default(),
                                             font_size: 16.0,

@@ -14,7 +14,10 @@ use crate::{
 
 use super::{
     highlight_constants::{BUTTON_SELECTED, DANGER_DEFAULT, DANGER_HOVERED},
-    structs::{BevyBotAlgorithm, BevyBotDifficulty, BevyMenuContent, BevyPlayButton, BevyReversi},
+    structs::{
+        BevyBotAlgorithm, BevyBotDifficulty, BevyBotHeuristic, BevyMenuContent, BevyPlayButton,
+        BevyReversi,
+    },
 };
 
 pub fn handle_difficulty_buttons(
@@ -77,6 +80,23 @@ pub fn handle_algorithm_buttons(
     }
 }
 
+pub fn handle_heuristic_buttons(
+    mut config: ResMut<BevyMenuContent>,
+    mut query: Query<(&Interaction, &mut BackgroundColor, &BevyBotHeuristic), With<Button>>,
+) {
+    for (interaction, mut background_color, heuristic) in &mut query {
+        if config.config.heuristic.is_some_and(|a| a == heuristic.0) {
+            *background_color = BackgroundColor(BUTTON_SELECTED);
+        } else {
+            match interaction {
+                Interaction::Pressed => config.config.heuristic = Some(heuristic.0),
+                Interaction::Hovered => *background_color = BackgroundColor(BUTTON_HOVERED),
+                Interaction::None => *background_color = BackgroundColor(BUTTON_DEFAULT),
+            }
+        }
+    }
+}
+
 pub fn handle_play_button(
     mut game: ResMut<BevyReversi>,
     mut state: ResMut<NextState<GameState>>,
@@ -117,8 +137,9 @@ fn start_game(
     state.set(GameState::PlayerTurn);
     game.0 = Reversi::new(Some((
         Player::Red,
-        config.config.algorithm.unwrap(),
         config.config.difficulty.unwrap(),
+        config.config.algorithm.unwrap(),
+        config.config.heuristic.unwrap(),
     )));
     game.0.update_valid_moves();
 }

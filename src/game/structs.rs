@@ -1,13 +1,15 @@
 use bevy::prelude::*;
 
 use crate::{
-    bot_algorithm::BotAlgorithm, bot_difficulty::BotDifficulty, player::Player, reversi::Reversi,
+    bot_algorithm::BotAlgorithm, bot_difficulty::BotDifficulty, bot_heuristic::BotHeuristic,
+    player::Player, reversi::Reversi,
 };
 
 #[derive(Default, Debug)]
 pub struct BevyGameConfig {
     pub difficulty: Option<BotDifficulty>,
     pub algorithm: Option<BotAlgorithm>,
+    pub heuristic: Option<BotHeuristic>,
 }
 
 #[derive(Resource)]
@@ -71,6 +73,9 @@ pub struct BevyBotDifficulty(pub BotDifficulty);
 pub struct BevyBotAlgorithm(pub BotAlgorithm);
 
 #[derive(Component, Debug)]
+pub struct BevyBotHeuristic(pub BotHeuristic);
+
+#[derive(Component, Debug)]
 pub struct BevyPlayButton;
 
 #[derive(Component, Default, Debug)]
@@ -83,8 +88,9 @@ impl Default for BevyReversi {
     fn default() -> Self {
         let mut game = Reversi::new(Some((
             Player::Red,
-            BotAlgorithm::MinMax,
             BotDifficulty::Easy,
+            BotAlgorithm::MinMax,
+            BotHeuristic::UniformWeighting,
         )));
         game.update_valid_moves();
 

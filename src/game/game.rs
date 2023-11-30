@@ -15,7 +15,7 @@ use crate::game::{
 
 use super::{
     interactions::{display_metrics, show_game_over, update_grid_highlights},
-    menu_interactions::{handle_algorithm_buttons, handle_play_button},
+    menu_interactions::{handle_algorithm_buttons, handle_heuristic_buttons, handle_play_button},
 };
 
 pub fn run_game() {
@@ -37,6 +37,7 @@ pub fn run_game() {
             (
                 handle_difficulty_buttons,
                 handle_algorithm_buttons,
+                handle_heuristic_buttons,
                 handle_play_button,
             )
                 .run_if(in_state(GameState::Menu)),
