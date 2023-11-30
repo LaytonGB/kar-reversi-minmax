@@ -2,12 +2,16 @@ use async_recursion::async_recursion;
 use futures::{executor::block_on, future::join_all};
 use std::sync::{Arc, RwLock};
 
-use crate::{board::Board, bot_algorithm::BotAlgorithm, player::Player, reversi::Reversi};
+use crate::{
+    board::Board, bot_algorithm::BotAlgorithm, bot_heuristic::BotHeuristic, player::Player,
+    reversi::Reversi,
+};
 
 #[derive(Clone, Debug)]
 pub struct Bot {
     algorithm: BotAlgorithm,
     max_depth: Option<usize>,
+    heuristic: BotHeuristic,
     expansions: usize,
     comparisons: usize,
 }
@@ -17,6 +21,7 @@ impl Default for Bot {
         Self {
             algorithm: BotAlgorithm::MinMax,
             max_depth: Default::default(),
+            heuristic: BotHeuristic::UniformWeighting,
             expansions: Default::default(),
             comparisons: Default::default(),
         }
@@ -24,10 +29,11 @@ impl Default for Bot {
 }
 
 impl Bot {
-    pub fn new(algorithm: BotAlgorithm, max_depth: Option<usize>) -> Self {
+    pub fn new(algorithm: BotAlgorithm, max_depth: Option<usize>, heuristic: BotHeuristic) -> Self {
         Self {
             algorithm,
             max_depth,
+            heuristic,
             ..Default::default()
         }
     }
@@ -52,14 +58,39 @@ impl Bot {
         );
     }
 
-    fn eval(game: &Reversi) -> i64 {
-        game.board()
-            .pieces_for_player(game.current_player())
-            .count() as i64
-            - game
-                .board()
-                .pieces_for_player(game.current_player().other())
-                .count() as i64
+    fn eval(heuristic: BotHeuristic, board: &Board, player: Player) -> i64 {
+        match heuristic {
+            BotHeuristic::UniformWeighting => Self::uniform_eval(board, player),
+            BotHeuristic::TacticalWeighting => Self::tactical_eval(board, player),
+        }
+    }
+
+    fn uniform_eval(board: &Board, player: Player) -> i64 {
+        board.pieces_for_player(player).count() as i64
+            - board.pieces_for_player(player.other()).count() as i64
+    }
+
+    fn tactical_eval(board: &Board, player: Player) -> i64 {
+        board
+            .pieces_for_player(player)
+            .map(|coord| Self::get_tactical_eval_score_for_coord(board, coord))
+            .sum::<i64>()
+            - board
+                .pieces_for_player(player.other())
+                .map(|coord| Self::get_tactical_eval_score_for_coord(board, coord))
+                .sum::<i64>()
+    }
+
+    fn get_tactical_eval_score_for_coord(board: &Board, coord: (usize, usize)) -> i64 {
+        match (
+            coord.0 == 0 || coord.0 == board.size() - 1,
+            coord.1 == 0 || coord.1 == board.size() - 1,
+        ) {
+            (true, true) => 9,
+            (true, false) => 3,
+            (false, true) => 3,
+            (false, false) => 1,
+        }
     }
 
     fn get_move_minmax(&mut self, mut game: Reversi) -> (usize, usize) {
@@ -76,9 +107,10 @@ impl Bot {
 
     fn get_move_async(&mut self, game: Reversi) -> (usize, usize) {
         let self_arc = Arc::new(RwLock::new(self.clone()));
-        let res = block_on(Self::async_with_heuristic(
+        let res = block_on(Self::async_negamax(
             self_arc.clone(),
             game.board().clone(),
+            self.heuristic,
             game.current_player(),
             game.bot_player().unwrap().0,
             self.max_depth,
@@ -92,7 +124,14 @@ impl Bot {
 
     fn minmax(&mut self, game: &mut Reversi, depth: usize) -> (i64, Option<(usize, usize)>) {
         if !Reversi::anyone_can_move(game.board()) || self.max_depth.is_some_and(|md| depth >= md) {
-            return (Self::eval(game), None);
+            return (
+                Self::eval(
+                    self.heuristic,
+                    game.board(),
+                    game.bot_player().as_ref().unwrap().0,
+                ),
+                None,
+            );
         }
 
         self.expansions += 1;
@@ -143,7 +182,15 @@ impl Bot {
         mut beta: i64,
     ) -> (i64, Option<(usize, usize)>, (i64, i64)) {
         if !Reversi::anyone_can_move(game.board()) || self.max_depth.is_some_and(|md| depth >= md) {
-            return (Self::eval(game), None, (alpha, beta));
+            return (
+                Self::eval(
+                    self.heuristic,
+                    game.board(),
+                    game.bot_player().as_ref().unwrap().0,
+                ),
+                None,
+                (alpha, beta),
+            );
         }
 
         self.expansions += 1;
@@ -204,7 +251,11 @@ impl Bot {
         mut beta: i64,
     ) -> (i64, Option<(usize, usize)>, (i64, i64)) {
         if !Reversi::anyone_can_move(game.board()) || self.max_depth.is_some_and(|md| depth >= md) {
-            return (Self::eval(game), None, (alpha, beta));
+            return (
+                -Self::eval(self.heuristic, game.board(), game.current_player()),
+                None,
+                (alpha, beta),
+            );
         }
 
         self.expansions += 1;
@@ -241,33 +292,11 @@ impl Bot {
         }
     }
 
-    fn heuristic_eval_coord(board: &Board, coord: (usize, usize)) -> i64 {
-        match (
-            coord.0 == 0 || coord.0 == board.size() - 1,
-            coord.1 == 0 || coord.1 == board.size() - 1,
-        ) {
-            (true, true) => 9,
-            (true, false) => 3,
-            (false, true) => 3,
-            (false, false) => 1,
-        }
-    }
-
-    fn heuristic_eval(board: &Board, bot_player: Player) -> i64 {
-        board
-            .pieces_for_player(bot_player)
-            .map(|coord| Self::heuristic_eval_coord(board, coord))
-            .sum::<i64>()
-            - board
-                .pieces_for_player(bot_player.other())
-                .map(|coord| Self::heuristic_eval_coord(board, coord))
-                .sum::<i64>()
-    }
-
     #[async_recursion]
-    async fn async_with_heuristic(
+    async fn async_negamax(
         bot: Arc<RwLock<Bot>>,
         board: Board,
+        heuristic: BotHeuristic,
         current_player: Player,
         bot_player: Player,
         max_depth: Option<usize>,
@@ -277,7 +306,7 @@ impl Bot {
     ) -> (i64, Option<(usize, usize)>, (i64, i64)) {
         if !Reversi::anyone_can_move(&board) || max_depth.is_some_and(|md| depth >= md) {
             return (
-                Self::heuristic_eval(&board, bot_player),
+                -Self::eval(heuristic, &board, current_player),
                 None,
                 (alpha, beta),
             );
@@ -291,9 +320,10 @@ impl Bot {
             }
         }
         if !Reversi::can_move(&board, current_player) {
-            Self::async_with_heuristic(
+            Self::async_negamax(
                 bot,
                 board,
+                heuristic,
                 current_player.other(),
                 bot_player,
                 max_depth,
@@ -311,9 +341,10 @@ impl Bot {
             for &m in &valid_moves {
                 let mut new_board = board.clone();
                 Reversi::place_piece_on_board(&mut new_board, m, current_player);
-                futures.push(Self::async_with_heuristic(
+                futures.push(Self::async_negamax(
                     bot.clone(),
                     new_board,
+                    heuristic,
                     current_player.other(),
                     bot_player,
                     max_depth,

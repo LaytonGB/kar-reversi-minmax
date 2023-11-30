@@ -1,3 +1,5 @@
+use kar_reversi_minmax::bot_heuristic::BotHeuristic;
+
 fn main() {
     #[cfg(all(feature = "terminal", feature = "game"))]
     compile_error!("cannot enable both terminal and game");
@@ -33,7 +35,23 @@ fn main() {
             clear_terminal();
         }
 
-        let mut game = Reversi::new(Some((Player::Red, algorithm.unwrap(), difficulty.unwrap())));
+        let mut heuristic: Option<BotHeuristic> = None;
+        while heuristic.is_none() {
+            println!("Enter a heuristic method (caps matter):");
+            for h in BotHeuristic::iter() {
+                println!("{}", h);
+            }
+            println!();
+            heuristic = try_read!().ok();
+            clear_terminal();
+        }
+
+        let mut game = Reversi::new(Some((
+            Player::Red,
+            difficulty.unwrap(),
+            algorithm.unwrap(),
+            heuristic.unwrap(),
+        )));
         game.start()
     }
 

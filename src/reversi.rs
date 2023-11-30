@@ -2,7 +2,7 @@ use std::{cmp::Ordering, collections::HashSet};
 
 use crate::{
     board::Board, bot::Bot, bot_algorithm::BotAlgorithm, bot_difficulty::BotDifficulty,
-    constants::DIRECTIONS, history::History, player::Player,
+    bot_heuristic::BotHeuristic, constants::DIRECTIONS, history::History, player::Player,
 };
 
 #[cfg(feature = "terminal")]
@@ -34,21 +34,22 @@ impl Default for Reversi {
 }
 
 impl Reversi {
-    pub fn new(bot_player: Option<(Player, BotAlgorithm, BotDifficulty)>) -> Self {
+    pub fn new(bot_player: Option<(Player, BotDifficulty, BotAlgorithm, BotHeuristic)>) -> Self {
         Self {
             board: Board::new(8),
-            bot_player: bot_player.map_or(None, |(p, al, dif)| {
+            bot_player: bot_player.map_or(None, |(p, difficulty, algorithm, heuristic)| {
                 type D = BotDifficulty;
                 Some((
                     p,
                     Bot::new(
-                        al,
-                        match dif {
+                        algorithm,
+                        match difficulty {
                             D::Easy => Some(1),
                             D::Medium => Some(4),
                             D::Hard => Some(8),
                             D::Insane => Some(12),
                         },
+                        heuristic,
                     ),
                 ))
             }),
